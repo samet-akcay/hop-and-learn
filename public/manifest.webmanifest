@@ -1,0 +1,18 @@
+{
+  "name": "Hop & Learn",
+  "short_name": "Hop & Learn",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#102336",
+  "theme_color": "#102336",
+  "description": "A calm maths, code and words game for young learners.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "scope": "./"
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+DESIGN.md
+PLAN.md
+playwright-report/
+test-results/
+*.tsbuildinfo
+.DS_Store
+.env*
+*.local

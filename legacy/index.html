@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ecf6ff">
+<title>Math Play</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --ink: #24404f;
+    --muted: #6b8697;
+    --sunken: #9fb2bf;
+    --sky1: #ecf6ff;
+    --sky2: #fff7ea;
+    --green: #58c15e;
+    --greenDark: #3e9a37;
+    --blue: #2f80ed;
+    --orange: #e8720c;
+    --gold: #f5b301;
+    --shadow: 0 10px 30px rgba(36, 64, 79, 0.12);
+  }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: "SF Pro Rounded", ui-rounded, "Hiragino Maru Gothic ProN", "Varela Round", system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: linear-gradient(160deg, var(--sky1) 0%, var(--sky2) 100%);
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+  }
+  .app {
+    height: 100dvh;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px clamp(10px, 3vw, 28px) 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .starPill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 6px 18px;
+    box-shadow: var(--shadow);
+    font-size: 24px;
+    font-weight: 800;
+  }
+  .starIcon { color: var(--gold); font-size: 27px; line-height: 1; }
+  .settings { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .settings select {
+    font: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ink);
+    background: #fff;
+    border: 2px solid #dbe9f4;
+    border-radius: 999px;
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+  .iconBtn {
+    font-size: 19px;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 2px solid #dbe9f4;
+    background: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: var(--ink);
+    transition: opacity 0.15s, transform 0.1s;
+    touch-action: manipulation;
+  }
+  .iconBtn:active { transform: scale(0.94); }
+  .iconBtn.off { opacity: 0.42; }
+  .card {
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: var(--shadow);
+    padding: clamp(10px, 2vh, 20px) clamp(12px, 3vw, 28px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .problemRow { display: flex; align-items: center; gap: 12px; }
+  .problem {
+    font-size: clamp(30px, 6vh, 54px);
+    font-weight: 900;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 1.2em;
+  }
+  .problem .op.plus { color: var(--blue); }
+  .problem .op.minus { color: var(--orange); }
+  .problem .op.times { color: #8467d7; }
+  .problem .eq { color: var(--muted); }
+  .problem .qmark { color: var(--gold); }
+  .problem .ans { color: var(--greenDark); }
+  .dirBadge {
+    font-size: 0.55em;
+    padding: 0.1em 0.5em;
+    border-radius: 999px;
+    font-weight: 900;
+  }
+  .dirBadge.plus { background: #e3f0ff; color: var(--blue); }
+  .dirBadge.minus { background: #ffeeda; color: var(--orange); }
+  .hint {
+    font-size: clamp(16px, 2.6vh, 23px);
+    color: var(--muted);
+    font-weight: 700;
+    text-align: center;
+    min-height: 1.5em;
+    line-height: 1.3;
+  }
+  .hint.win { color: var(--greenDark); }
+  .stage { flex: 1 1 auto; min-height: 110px; width: 100%; display: flex; }
+  #scene { width: 100%; height: 100%; display: block; }
+  #scene text { font-family: inherit; }
+  .answers {
+    display: flex;
+    gap: clamp(10px, 3vw, 26px);
+    min-height: clamp(72px, 11vh, 96px);
+    align-items: center;
+    justify-content: center;
+  }
+  .answerBtn {
+    width: clamp(84px, 12vw, 118px);
+    height: clamp(64px, 10vh, 90px);
+    border-radius: 24px;
+    border: none;
+    background: #fff;
+    box-shadow: 0 6px 0 #cfe0ee, 0 12px 22px rgba(36, 64, 79, 0.12);
+    font: inherit;
+    font-size: clamp(30px, 5vh, 44px);
+    font-weight: 900;
+    color: var(--ink);
+    cursor: pointer;
+    animation: pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    transition: transform 0.1s, box-shadow 0.1s;
+    touch-action: manipulation;
+  }
+  .answerBtn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 #cfe0ee; }
+  .answerBtn.correct { background: #e5f8e0; color: var(--greenDark); box-shadow: 0 6px 0 #b7e3ac; }
+  .answerBtn.wrong { background: #f1f4f7; color: var(--sunken); box-shadow: 0 6px 0 #dbe3e9; animation: wobble 0.4s ease; }
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn {
+    font: inherit;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    border-radius: 999px;
+    touch-action: manipulation;
+  }
+  .btn.ghost {
+    justify-self: start;
+    background: #fff;
+    color: var(--muted);
+    font-size: clamp(15px, 2.4vh, 19px);
+    padding: 14px 20px;
+    box-shadow: 0 4px 0 #dbe9f4;
+    transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
+  }
+  .btn.ghost:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #dbe9f4; }
+  .btn.ghost:disabled { opacity: 0.4; cursor: default; }
+  .btn.hop {
+    justify-self: center;
+    background: linear-gradient(180deg, #6fd066, var(--green));
+    color: #fff;
+    font-size: clamp(25px, 4.6vh, 38px);
+    letter-spacing: 2px;
+    padding: 14px clamp(34px, 7vw, 70px);
+    box-shadow: 0 8px 0 var(--greenDark), 0 14px 24px rgba(62, 154, 55, 0.32);
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+    transition: transform 0.1s, box-shadow 0.1s, background 0.2s, color 0.2s;
+  }
+  .btn.hop:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 2px 0 var(--greenDark); }
+  .btn.hop:disabled { background: #e2eaf0; color: #a9bbc7; box-shadow: 0 8px 0 #c6d3dc; text-shadow: none; cursor: default; }
+  .btn.hop.attn { animation: nudge 1.1s ease 2; }
+  @keyframes nudge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+  .btn.next {
+    justify-self: end;
+    background: linear-gradient(180deg, #ffcf4d, var(--gold));
+    color: #5b4300;
+    font-size: clamp(19px, 3vh, 25px);
+    padding: 14px 26px;
+    box-shadow: 0 6px 0 #cf9700;
+    visibility: hidden;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn.next.show { visibility: visible; animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .btn.next:active { transform: translateY(4px); box-shadow: 0 2px 0 #cf9700; }
+  .btn.goldBtn {
+    background: linear-gradient(180deg, #ffcf4d, var(--gold));
+    color: #5b4300;
+    font-size: 21px;
+    padding: 14px 30px;
+    box-shadow: 0 6px 0 #cf9700;
+  }
+  .flyingStar {
+    position: fixed;
+    z-index: 90;
+    font-size: 42px;
+    line-height: 1;
+    color: var(--gold);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(1.35);
+    transition: left 0.85s cubic-bezier(0.45, -0.1, 0.6, 1), top 0.85s cubic-bezier(0.45, -0.1, 0.6, 1),
+      transform 0.85s ease, opacity 0.85s ease;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: grid;
+    place-items: center;
+    background: rgba(240, 248, 255, 0.82);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    padding: 20px;
+  }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .overlayCard {
+    background: #fff;
+    border-radius: 32px;
+    padding: clamp(26px, 4vh, 44px) clamp(28px, 5vw, 56px);
+    box-shadow: var(--shadow);
+    text-align: center;
+    max-width: min(92vw, 560px);
+  }
+  .overlayCard h2 { margin: 0 0 14px; font-size: 30px; }
+  .overlayCard ol { text-align: left; margin: 0 0 20px; padding-left: 24px; font-size: 18px; line-height: 1.7; color: var(--ink); font-weight: 600; }
+  .bigStars { color: var(--gold); font-size: 44px; letter-spacing: 6px; margin-bottom: 10px; }
+  .overlayTitle { font-size: 26px; font-weight: 900; margin-bottom: 22px; }
+  .screen.hidden { display: none; }
+  .homeHeader { text-align: center; }
+  .homeHeader h1 { margin: 0; font-size: clamp(34px, 6vh, 52px); letter-spacing: 1px; }
+  .homeHeader p { margin: 10px 0 0; color: var(--muted); font-weight: 700; font-size: clamp(15px, 2.4vh, 19px); }
+  .homeCards {
+    display: flex;
+    gap: clamp(14px, 3vw, 32px);
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .gameCard {
+    width: clamp(220px, 32vw, 300px);
+    background: #fff;
+    border: 4px solid #e6f0f8;
+    border-radius: 30px;
+    box-shadow: var(--shadow);
+    padding: 26px 22px;
+    cursor: pointer;
+    font: inherit;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s, border-color 0.15s;
+    touch-action: manipulation;
+  }
+  .gameCard:hover { transform: translateY(-4px); }
+  .gameCard:active { transform: translateY(2px); }
+  .gameCard.line { border-color: #d9f0d6; }
+  .gameCard.bonds { border-color: #ffe4c2; }
+  .cardEmoji { font-size: 58px; line-height: 1; }
+  .cardTitle { font-size: clamp(22px, 3.4vh, 28px); font-weight: 900; }
+  .cardText { color: var(--muted); font-weight: 700; font-size: 16px; line-height: 1.35; }
+  .cardStars { color: var(--gold); font-weight: 900; font-size: 19px; margin-top: 4px; }
+  #screenHome { justify-content: center; justify-content: safe center; gap: clamp(18px, 4vh, 40px); overflow-y: auto; }
+  .bondsStage {
+    flex: 1 1 auto;
+    min-height: 130px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 4vw, 52px);
+    flex-wrap: wrap;
+  }
+  .frameWrap { flex: 0 1 auto; width: min(100%, 560px); }
+  .frame {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: clamp(3px, 0.7vw, 8px);
+    row-gap: clamp(8px, 1.4vw, 14px);
+    width: 100%;
+  }
+  .cell {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 3px dashed #cfdfec;
+    background: #f7fbfe;
+  }
+  .cell.filled { border: 3px solid #4b9be8; background: #6fb4f2; }
+  .cell.filled.gold { border-color: #d99f00; background: var(--gold); }
+  .cell.pop { animation: counterPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes counterPop { from { transform: scale(0.3); } }
+  .bondDiagram { width: clamp(168px, 22vw, 228px); height: auto; flex: 0 0 auto; }
+  .bondsStage.pulse { animation: nudge 1.1s ease 2; }
+  .btn.hop.count { padding: 14px clamp(22px, 5vw, 48px); font-size: clamp(22px, 4.2vh, 34px); }
+  .timesStage { flex: 1 1 auto; min-height: 140px; width: 100%; display: flex; }
+  #timesScene { width: 100%; height: 100%; display: block; }
+  #timesScene .mDot { transition: fill 0.15s, stroke 0.15s; }
+  #timesScene .mDot.mPop { animation: dotPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); transform-box: fill-box; transform-origin: center; }
+  #timesScene .mGroup rect { transition: fill 0.2s, stroke 0.2s; }
+  @keyframes dotPop { from { transform: scale(0.2); } }
+  .gameCard.times { border-color: #e6def8; }
+  @keyframes pop { from { transform: scale(0.4); opacity: 0; } }
+  @keyframes wobble {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  @media (max-width: 700px) {
+    .gameCard { width: 100%; flex-direction: row; justify-content: flex-start; text-align: left; padding: 14px 18px; gap: 14px; border-radius: 24px; }
+    .cardEmoji { font-size: 42px; }
+    .cardTitle { font-size: 20px; }
+    .cardText { font-size: 13px; }
+    .cardStars { margin-left: auto; margin-top: 0; white-space: nowrap; }
+  }
+  @media (max-width: 520px) {
+    .settings select { font-size: 14px; padding: 6px 8px; }
+    .iconBtn { width: 40px; height: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="app screen" id="screenHome">
+  <header class="homeHeader">
+    <h1>Math Play</h1>
+    <p>Pick a game</p>
+  </header>
+  <main class="homeCards">
+    <button class="gameCard line" id="cardLine">
+      <div class="cardEmoji">🐸</div>
+      <div class="cardTitle">Number Line</div>
+      <div class="cardText">Hop along the line to add and subtract</div>
+      <div class="cardStars">★ <span id="cardLineStars">0</span></div>
+    </button>
+    <button class="gameCard bonds" id="cardBonds">
+      <div class="cardEmoji">🧮</div>
+      <div class="cardTitle">Number Bonds</div>
+      <div class="cardText">Find the missing part that makes 10 or 20</div>
+      <div class="cardStars">★ <span id="cardBondsStars">0</span></div>
+    </button>
+    <button class="gameCard times" id="cardTimes">
+      <div class="cardEmoji">✖️</div>
+      <div class="cardTitle">Times Tables</div>
+      <div class="cardText">Make groups of dots and count them up</div>
+      <div class="cardStars">★ <span id="cardTimesStars">0</span></div>
+    </button>
+  </main>
+</div>
+
+<div class="app screen hidden" id="screenLine">
+  <header class="topbar">
+    <div class="starPill" id="starPill"><span class="starIcon">★</span><span id="starCount">0</span></div>
+    <div class="settings">
+      <select id="rangeSel" title="Numbers on the line" aria-label="Numbers on the line">
+        <option value="10">0-10</option>
+        <option value="20">0-20</option>
+      </select>
+      <select id="hopsSel" title="How many hops" aria-label="How many hops">
+        <option value="1">1 hop</option>
+        <option value="2">2 hops</option>
+        <option value="3">3 hops</option>
+        <option value="4">4 hops</option>
+        <option value="5">5 hops</option>
+        <option value="mix12">1-2 mix</option>
+        <option value="mix15">1-5 mix</option>
+      </select>
+      <select id="opSel" title="Addition, subtraction, or both" aria-label="Addition, subtraction, or both">
+        <option value="both">+ and −</option>
+        <option value="add">+ only</option>
+        <option value="sub">− only</option>
+      </select>
+      <button class="iconBtn" id="soundBtn" title="Sound on or off" aria-label="Sound on or off">🔊</button>
+      <button class="iconBtn" id="speechBtn" title="Read aloud on or off" aria-label="Read aloud on or off">🗣️</button>
+      <button class="iconBtn" id="helpBtn" title="How to play" aria-label="How to play">?</button>
+      <button class="iconBtn" id="lineHomeBtn" title="Back to games" aria-label="Back to games">🏠</button>
+    </div>
+  </header>
+
+  <main class="card">
+    <div class="problemRow">
+      <div class="problem" id="problem"></div>
+      <button class="iconBtn" id="repeatBtn" title="Say the problem again" aria-label="Say the problem again">🔈</button>
+    </div>
+    <div class="hint" id="hint" aria-live="polite"></div>
+    <div class="stage">
+      <svg id="scene" viewBox="0 0 1000 440" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <marker id="arrowPlus" viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+            <path d="M0 0 L10 5 L0 10 Z" fill="#3fa34d"></path>
+          </marker>
+          <marker id="arrowMinus" viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+            <path d="M0 0 L10 5 L0 10 Z" fill="#e8720c"></path>
+          </marker>
+        </defs>
+        <g id="arcs"></g>
+        <g id="lineLayer"></g>
+        <circle id="landingRing" cx="0" cy="0" r="0" fill="none" stroke="#f5b301" stroke-width="6" opacity="0"></circle>
+        <g id="puffs"></g>
+        <g id="frog" transform="translate(72 300)">
+          <ellipse cx="0" cy="0" rx="27" ry="6.5" fill="rgba(36,64,79,0.14)"></ellipse>
+          <g id="frogBody">
+            <ellipse cx="-21" cy="-6" rx="13" ry="7.5" fill="#4e9d47"></ellipse>
+            <ellipse cx="21" cy="-6" rx="13" ry="7.5" fill="#4e9d47"></ellipse>
+            <ellipse cx="0" cy="-27" rx="30" ry="25" fill="#6fc35f"></ellipse>
+            <ellipse cx="0" cy="-19" rx="18" ry="14" fill="#eaf7dc"></ellipse>
+            <circle cx="-15" cy="-53" r="12.5" fill="#ffffff" stroke="#4e9d47" stroke-width="3.5"></circle>
+            <circle cx="15" cy="-53" r="12.5" fill="#ffffff" stroke="#4e9d47" stroke-width="3.5"></circle>
+            <circle cx="-14" cy="-51" r="5.5" fill="#243b48"></circle>
+            <circle cx="16" cy="-51" r="5.5" fill="#243b48"></circle>
+            <circle cx="-12.5" cy="-53.5" r="1.8" fill="#ffffff"></circle>
+            <circle cx="17.5" cy="-53.5" r="1.8" fill="#ffffff"></circle>
+            <path d="M -9 -37 Q 0 -30 9 -37" fill="none" stroke="#2f6b2a" stroke-width="3.2" stroke-linecap="round"></path>
+            <circle cx="-20" cy="-42" r="4" fill="#f6a5a5" opacity="0.55"></circle>
+            <circle cx="20" cy="-42" r="4" fill="#f6a5a5" opacity="0.55"></circle>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="answers" id="answers"></div>
+  </main>
+
+  <footer class="controls">
+    <button class="btn ghost" id="showBtn">Show me</button>
+    <button class="btn hop" id="hopBtn">HOP</button>
+    <button class="btn next" id="nextBtn">Next</button>
+  </footer>
+</div>
+
+<div class="app screen hidden" id="screenBonds">
+  <header class="topbar">
+    <div class="starPill" id="bondStarPill"><span class="starIcon">★</span><span id="bondStarCount">0</span></div>
+    <div class="settings">
+      <select id="bondTotalSel" title="Bonds to 10 or 20" aria-label="Bonds to 10 or 20">
+        <option value="10">Bonds to 10</option>
+        <option value="20">Bonds to 20</option>
+      </select>
+      <button class="iconBtn" id="bondSoundBtn" title="Sound on or off" aria-label="Sound on or off">🔊</button>
+      <button class="iconBtn" id="bondSpeechBtn" title="Read aloud on or off" aria-label="Read aloud on or off">🗣️</button>
+      <button class="iconBtn" id="bondHelpBtn" title="How to play" aria-label="How to play">?</button>
+      <button class="iconBtn" id="bondHomeBtn" title="Back to games" aria-label="Back to games">🏠</button>
+    </div>
+  </header>
+
+  <main class="card">
+    <div class="problemRow">
+      <div class="problem" id="bondProblem"></div>
+      <button class="iconBtn" id="bondRepeatBtn" title="Say it again" aria-label="Say it again">🔈</button>
+    </div>
+    <div class="hint" id="bondHint" aria-live="polite"></div>
+    <div class="bondsStage" id="bondsStage">
+      <div class="frameWrap"><div class="frame" id="bondFrame"></div></div>
+      <svg class="bondDiagram" viewBox="0 0 220 172" aria-hidden="true">
+        <line x1="110" y1="80" x2="55" y2="103" stroke="#cfe1ef" stroke-width="7" stroke-linecap="round"></line>
+        <line x1="110" y1="80" x2="165" y2="103" stroke="#cfe1ef" stroke-width="7" stroke-linecap="round"></line>
+        <circle cx="110" cy="46" r="35" fill="#ffffff" stroke="#a8c8dd" stroke-width="5"></circle>
+        <text id="bondWholeText" x="110" y="46" text-anchor="middle" dominant-baseline="central" font-size="32" font-weight="900" fill="#24404f">10</text>
+        <circle cx="55" cy="136" r="30" fill="#e3f0ff" stroke="#4b9be8" stroke-width="5"></circle>
+        <text id="bondPartAText" x="55" y="136" text-anchor="middle" dominant-baseline="central" font-size="28" font-weight="900" fill="#24404f">7</text>
+        <circle id="bondPartBCircle" cx="165" cy="136" r="30" fill="#ffffff" stroke="#a8c8dd" stroke-width="5" stroke-dasharray="9 8"></circle>
+        <text id="bondPartBText" x="165" y="136" text-anchor="middle" dominant-baseline="central" font-size="28" font-weight="900" fill="#24404f">?</text>
+      </svg>
+    </div>
+    <div class="answers" id="bondAnswers"></div>
+  </main>
+
+  <footer class="controls">
+    <button class="btn ghost" id="bondShowBtn">Show me</button>
+    <button class="btn hop count" id="bondCountBtn">COUNT</button>
+    <button class="btn next" id="bondNextBtn">Next</button>
+  </footer>
+</div>
+
+<div class="app screen hidden" id="screenTimes">
+  <header class="topbar">
+    <div class="starPill" id="timesStarPill"><span class="starIcon">★</span><span id="timesStarCount">0</span></div>
+    <div class="settings">
+      <select id="tableSel" title="Which times table" aria-label="Which times table">
+        <option value="2">× 2</option>
+        <option value="3">× 3</option>
+        <option value="4">× 4</option>
+        <option value="5">× 5</option>
+        <option value="6">× 6</option>
+        <option value="7">× 7</option>
+        <option value="8">× 8</option>
+        <option value="9">× 9</option>
+        <option value="10">× 10</option>
+        <option value="mix25">Mix 2-5</option>
+        <option value="mix210">Mix 2-10</option>
+      </select>
+      <select id="groupsSel" title="How many groups" aria-label="How many groups">
+        <option value="5">Groups 1-5</option>
+        <option value="10">Groups 1-10</option>
+      </select>
+      <button class="iconBtn" id="timesSoundBtn" title="Sound on or off" aria-label="Sound on or off">🔊</button>
+      <button class="iconBtn" id="timesSpeechBtn" title="Read aloud on or off" aria-label="Read aloud on or off">🗣️</button>
+      <button class="iconBtn" id="timesHelpBtn" title="How to play" aria-label="How to play">?</button>
+      <button class="iconBtn" id="timesHomeBtn" title="Back to games" aria-label="Back to games">🏠</button>
+    </div>
+  </header>
+
+  <main class="card">
+    <div class="problemRow">
+      <div class="problem" id="timesProblem"></div>
+      <button class="iconBtn" id="timesRepeatBtn" title="Say it again" aria-label="Say it again">🔈</button>
+    </div>
+    <div class="hint" id="timesHint" aria-live="polite"></div>
+    <div class="timesStage">
+      <svg id="timesScene" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+    </div>
+    <div class="answers" id="timesAnswers"></div>
+  </main>
+
+  <footer class="controls">
+    <button class="btn ghost" id="timesShowBtn">Show me</button>
+    <button class="btn hop count" id="timesGroupBtn">GROUP</button>
+    <button class="btn next" id="timesNextBtn">Next</button>
+  </footer>
+</div>
+
+<div class="overlay" id="milestone">
+  <div class="overlayCard">
+    <div class="bigStars">★★★★★</div>
+    <div class="overlayTitle" id="milestoneText">5 stars!</div>
+    <button class="btn goldBtn" id="milestoneClose">Keep playing</button>
+  </div>
+</div>
+
+<div class="overlay" id="help">
+  <div class="overlayCard">
+    <h2 id="helpTitle">How to play</h2>
+    <ol id="helpList"></ol>
+    <button class="btn goldBtn" id="helpClose">Got it</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const SVG_NS = "http://www.w3.org/2000/svg";
+const LINE_Y = 306;
+const GROUND = LINE_Y - 6;
+const PAD = 72;
+const VIEW_W = 1000;
+const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"];
+
+const state = {
+  max: 10,
+  hopSize: "mix12",
+  opMode: "both",
+  sound: true,
+  speech: true,
+  stars: 0,
+  problem: null,
+  pos: 0,
+  hops: 0,
+  phase: "idle",
+  busy: false,
+  lastKey: "",
+  lastOp: "+",
+  opRun: 0,
+  runId: 0
+};
+
+let currentScreen = "home";
+
+const bonds = {
+  total: 10,
+  partA: 0,
+  missing: 0,
+  filled: 0,
+  stars: 0,
+  sound: true,
+  speech: true,
+  phase: "idle",
+  busy: false,
+  lastKey: "",
+  runId: 0
+};
+
+const times = {
+  table: "mix25",
+  maxGroups: 5,
+  groups: 0,
+  size: 0,
+  revealed: 0,
+  stars: 0,
+  sound: true,
+  speech: true,
+  phase: "idle",
+  busy: false,
+  lastKey: "",
+  runId: 0,
+  dotEls: [],
+  rectEls: []
+};
+
+const scene = $("scene");
+const arcsLayer = $("arcs");
+const lineLayer = $("lineLayer");
+const puffsLayer = $("puffs");
+const frogEl = $("frog");
+const ringEl = $("landingRing");
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+const ri = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const key in attrs) el.setAttribute(key, attrs[key]);
+  return el;
+}
+
+const stepWidth = () => (VIEW_W - PAD * 2) / state.max;
+const xOf = n => PAD + n * stepWidth();
+const frogScale = () => state.max <= 10 ? 1 : 0.78;
+
+let actx = null;
+function audio() {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    actx = new AC();
+  }
+  if (actx.state === "suspended") actx.resume();
+  return actx;
+}
+
+function soundAllowed() {
+  if (currentScreen === "line") return state.sound;
+  if (currentScreen === "bonds") return bonds.sound;
+  if (currentScreen === "times") return times.sound;
+  return false;
+}
+
+function speechAllowed() {
+  if (currentScreen === "line") return state.speech;
+  if (currentScreen === "bonds") return bonds.speech;
+  if (currentScreen === "times") return times.speech;
+  return false;
+}
+
+function tone(freq, delay, dur, type, vol, slideTo) {
+  if (!soundAllowed()) return;
+  const a = audio();
+  if (!a) return;
+  try {
+    const t = a.currentTime + delay;
+    const osc = a.createOscillator();
+    const gain = a.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(gain);
+    gain.connect(a.destination);
+    osc.start(t);
+    osc.stop(t + dur + 0.1);
+  } catch (err) {}
+}
+
+const sfx = {
+  hop: () => tone(300, 0, 0.16, "triangle", 0.15, 620),
+  land: () => tone(500, 0, 0.1, "sine", 0.09, 360),
+  win: () => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.11, 0.24, "triangle", 0.15)),
+  oops: () => tone(320, 0, 0.22, "sine", 0.12, 235),
+  tap: () => tone(680, 0, 0.06, "sine", 0.07),
+  tick: () => tone(520, 0, 0.1, "sine", 0.1, 760),
+  star: () => [880, 1174.66].forEach((f, i) => tone(f, i * 0.09, 0.18, "sine", 0.11)),
+  cheer: () => [523.25, 587.33, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.1, 0.26, "triangle", 0.13))
+};
+
+let voices = [];
+function loadVoices() {
+  if (!("speechSynthesis" in window)) return;
+  voices = window.speechSynthesis.getVoices() || [];
+}
+if ("speechSynthesis" in window) {
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function cancelSpeech() {
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+function speak(text) {
+  if (!speechAllowed() || !("speechSynthesis" in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.92;
+    u.pitch = 1.06;
+    const preferred = voices.find(v => /^en/i.test(v.lang) && /Samantha|Karen|Daniel|Google US English|Ava|Allison/i.test(v.name));
+    const fallback = voices.find(v => /^en/i.test(v.lang));
+    const voice = preferred || fallback;
+    if (voice) u.voice = voice;
+    window.speechSynthesis.speak(u);
+  } catch (err) {}
+}
+
+function loadSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("nl-frog-settings") || "{}");
+    if (saved.max === 10 || saved.max === 20) state.max = saved.max;
+    const hopMap = { small: "mix12", big: "mix15" };
+    const hopValue = hopMap[saved.hopSize] || saved.hopSize;
+    if (["1", "2", "3", "4", "5", "mix12", "mix15"].includes(hopValue)) state.hopSize = hopValue;
+    if (saved.opMode === "add" || saved.opMode === "sub" || saved.opMode === "both") state.opMode = saved.opMode;
+    if (typeof saved.sound === "boolean") state.sound = saved.sound;
+    if (typeof saved.speech === "boolean") state.speech = saved.speech;
+    if (Number.isFinite(saved.stars)) state.stars = Math.max(0, Math.min(999, saved.stars));
+  } catch (err) {}
+  $("rangeSel").value = String(state.max);
+  $("hopsSel").value = state.hopSize;
+  $("opSel").value = state.opMode;
+  $("starCount").textContent = state.stars;
+  syncToggles();
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem("nl-frog-settings", JSON.stringify({
+      max: state.max,
+      hopSize: state.hopSize,
+      opMode: state.opMode,
+      sound: state.sound,
+      speech: state.speech,
+      stars: state.stars
+    }));
+  } catch (err) {}
+}
+
+function syncToggles() {
+  const soundBtn = $("soundBtn");
+  const speechBtn = $("speechBtn");
+  soundBtn.textContent = state.sound ? "🔊" : "🔇";
+  soundBtn.classList.toggle("off", !state.sound);
+  speechBtn.textContent = state.speech ? "🗣️" : "🤫";
+  speechBtn.classList.toggle("off", !state.speech);
+}
+
+function buildLine() {
+  lineLayer.innerHTML = "";
+  const sw = stepWidth();
+  lineLayer.appendChild(svgEl("rect", {
+    x: xOf(0) - 16,
+    y: LINE_Y - 6,
+    width: state.max * sw + 32,
+    height: 12,
+    rx: 6,
+    fill: "#cfe1ef"
+  }));
+  const fontSize = state.max <= 10 ? 36 : 24;
+  for (let i = 0; i <= state.max; i++) {
+    const x = xOf(i);
+    lineLayer.appendChild(svgEl("circle", { cx: x, cy: LINE_Y, r: 7, fill: "#ffffff", stroke: "#a8c8dd", "stroke-width": 4 }));
+    const label = svgEl("text", {
+      x: x,
+      y: LINE_Y + 62,
+      "text-anchor": "middle",
+      "font-size": fontSize,
+      "font-weight": 800,
+      fill: "#5b7d92"
+    });
+    label.textContent = String(i);
+    lineLayer.appendChild(label);
+  }
+  placeFrog(state.pos);
+}
+
+function placeFrog(n) {
+  const s = frogScale();
+  frogEl.setAttribute("transform", `translate(${xOf(n)} ${GROUND}) scale(${s} ${s})`);
+}
+
+function clearArcs() {
+  arcsLayer.innerHTML = "";
+}
+
+function spawnPuff(x) {
+  const puff = svgEl("circle", { cx: x, cy: GROUND, r: 6, fill: "#dbe9f4", opacity: 0.9 });
+  puffsLayer.appendChild(puff);
+  const t0 = performance.now();
+  const dur = 420;
+  function frame(now) {
+    const t = Math.min(1, (now - t0) / dur);
+    puff.setAttribute("r", (6 + 26 * t).toFixed(1));
+    puff.setAttribute("opacity", (0.9 * (1 - t)).toFixed(2));
+    if (t < 1) requestAnimationFrame(frame);
+    else puff.remove();
+  }
+  requestAnimationFrame(frame);
+}
+
+function addArc(from, to) {
+  const x1 = xOf(from);
+  const x2 = xOf(to);
+  const mid = (x1 + x2) / 2;
+  const arcH = Math.min(168, Math.max(88, stepWidth() * 2.1));
+  const path = svgEl("path", {
+    d: `M ${x1} ${LINE_Y - 4} Q ${mid} ${LINE_Y - 4 - arcH} ${x2} ${LINE_Y - 4}`,
+    fill: "none",
+    stroke: state.problem.op === "+" ? "#3fa34d" : "#e8720c",
+    "stroke-width": 7,
+    "stroke-linecap": "round",
+    "marker-end": state.problem.op === "+" ? "url(#arrowPlus)" : "url(#arrowMinus)",
+    opacity: 0.85
+  });
+  arcsLayer.appendChild(path);
+  if (path.getTotalLength) {
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    path.style.transition = "stroke-dashoffset 0.45s ease 0.12s";
+    requestAnimationFrame(() => { path.style.strokeDashoffset = "0"; });
+  }
+}
+
+function animateHop(from, to, run, done) {
+  const x1 = xOf(from);
+  const x2 = xOf(to);
+  const s = frogScale();
+  const dur = 640;
+  const lift = 96;
+  const t0 = performance.now();
+  sfx.hop();
+  function frame(now) {
+    if (run !== state.runId) {
+      if (done) done();
+      return;
+    }
+    const t = Math.min(1, (now - t0) / dur);
+    const k = 0.16 * Math.pow(2 * t - 1, 2);
+    const x = x1 + (x2 - x1) * t;
+    const y = GROUND - Math.sin(Math.PI * t) * lift;
+    frogEl.setAttribute("transform",
+      `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${(s * (1 + k * 0.9)).toFixed(4)} ${(s * (1 - k)).toFixed(4)})`);
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      frogEl.setAttribute("transform", `translate(${x2} ${GROUND}) scale(${s} ${s})`);
+      sfx.land();
+      spawnPuff(x2);
+      if (done) done();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function hopOnce() {
+  const run = state.runId;
+  return new Promise(resolve => {
+    if (run !== state.runId) {
+      resolve();
+      return;
+    }
+    const p = state.problem;
+    const dir = p.op === "+" ? 1 : -1;
+    const from = state.pos;
+    const to = state.pos + dir;
+    state.hops++;
+    state.pos = to;
+    addArc(from, to);
+    speak(WORDS[state.hops] || String(state.hops));
+    updateHint();
+    animateHop(from, to, run, resolve);
+  });
+}
+
+function showLanding() {
+  ringEl.setAttribute("cx", xOf(state.pos));
+  ringEl.setAttribute("cy", LINE_Y);
+  ringEl.setAttribute("opacity", 0.95);
+  const t0 = performance.now();
+  const dur = 320;
+  function frame(now) {
+    const t = Math.min(1, (now - t0) / dur);
+    ringEl.setAttribute("r", (8 + 18 * (1 - Math.pow(1 - t, 3))).toFixed(1));
+    if (t < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function setButtons(phase) {
+  $("hopBtn").disabled = phase !== "ready";
+  $("showBtn").disabled = phase !== "ready";
+  $("nextBtn").classList.toggle("show", phase === "won");
+}
+
+function setHint(text, win) {
+  const hint = $("hint");
+  hint.textContent = text;
+  hint.classList.toggle("win", !!win);
+}
+
+function updateHint() {
+  const p = state.problem;
+  if (state.hops === 0) {
+    setHint(`Start at ${p.a}. Hop ${p.b} ${p.b === 1 ? "time" : "times"} to the ${p.op === "+" ? "right" : "left"}.`);
+  } else if (state.hops < p.b) {
+    setHint(`Hop ${state.hops} of ${p.b}...`);
+  } else {
+    setHint(`You landed on ${p.result}!`, true);
+  }
+}
+
+function pickAmount() {
+  const max = state.max;
+  if (state.hopSize === "mix12") return ri(1, Math.min(2, max));
+  if (state.hopSize === "mix15") return ri(1, Math.min(5, max));
+  const exact = parseInt(state.hopSize, 10);
+  return Number.isFinite(exact) ? Math.min(exact, max) : 1;
+}
+
+function pickProblem() {
+  const max = state.max;
+  let op;
+  if (state.opMode === "add") op = "+";
+  else if (state.opMode === "sub") op = "-";
+  else if (state.opRun >= 2) op = state.lastOp === "+" ? "-" : "+";
+  else op = Math.random() < 0.5 ? "+" : "-";
+  let best = null;
+  for (let i = 0; i < 50; i++) {
+    const amount = pickAmount();
+    const start = op === "+" ? ri(0, max - amount) : ri(amount, max);
+    const key = `${start}${op}${amount}`;
+    if (key !== state.lastKey) {
+      best = { a: start, op: op, b: amount, result: op === "+" ? start + amount : start - amount };
+      break;
+    }
+  }
+  if (!best) {
+    const amount = pickAmount();
+    const start = op === "+" ? ri(0, max - amount) : ri(amount, max);
+    best = { a: start, op: op, b: amount, result: op === "+" ? start + amount : start - amount };
+  }
+  const changed = op !== state.lastOp;
+  state.opRun = changed ? 1 : state.opRun + 1;
+  state.lastOp = op;
+  state.lastKey = `${best.a}${best.op}${best.b}`;
+  return best;
+}
+
+function renderProblem() {
+  const p = state.problem;
+  const cls = p.op === "+" ? "plus" : "minus";
+  $("problem").innerHTML =
+    `<span class="num">${p.a}</span>` +
+    `<span class="op ${cls}">${p.op}</span>` +
+    `<span class="num">${p.b}</span>` +
+    `<span class="eq">=</span>` +
+    `<span class="qmark">?</span>` +
+    `<span class="dirBadge ${cls}">${p.op === "+" ? "→" : "←"}</span>`;
+}
+
+function revealAnswer() {
+  const p = state.problem;
+  const cls = p.op === "+" ? "plus" : "minus";
+  $("problem").innerHTML =
+    `<span class="num">${p.a}</span>` +
+    `<span class="op ${cls}">${p.op}</span>` +
+    `<span class="num">${p.b}</span>` +
+    `<span class="eq">=</span>` +
+    `<span class="ans">${p.result}</span>`;
+}
+
+function speakProblem() {
+  if (!state.problem) return;
+  const p = state.problem;
+  speak(`${p.a} ${p.op === "+" ? "plus" : "minus"} ${p.b}. Start at ${p.a}. Hop ${p.b} ${p.b === 1 ? "time" : "times"} to the ${p.op === "+" ? "right" : "left"}.`);
+}
+
+function hideAnswers() {
+  $("answers").innerHTML = "";
+}
+
+function showAnswers() {
+  const p = state.problem;
+  const box = $("answers");
+  const options = new Set([p.result]);
+  const pool = [];
+  for (let d = 1; d <= state.max && pool.length < 14; d++) {
+    if (p.result - d >= 0) pool.push(p.result - d);
+    if (p.result + d <= state.max) pool.push(p.result + d);
+  }
+  shuffle(pool);
+  while (options.size < 3 && pool.length) options.add(pool.pop());
+  const buttons = shuffle([...options]);
+  box.innerHTML = "";
+  buttons.forEach((n, i) => {
+    const btn = document.createElement("button");
+    btn.className = "answerBtn";
+    btn.textContent = String(n);
+    btn.style.animationDelay = `${i * 60}ms`;
+    btn.addEventListener("click", () => answer(btn, n));
+    box.appendChild(btn);
+  });
+}
+
+async function answer(btn, n) {
+  if (state.phase !== "ready" && state.phase !== "landed") return;
+  const p = state.problem;
+  if (n === p.result) {
+    state.phase = "won";
+    [...$("answers").children].forEach(b => { b.disabled = true; });
+    btn.classList.add("correct");
+    setButtons("won");
+    sfx.win();
+    const run = state.runId;
+    if (state.hops < p.b) {
+      speak("Yes!");
+      await wait(500);
+      if (run !== state.runId) return;
+      while (state.hops < p.b && run === state.runId) {
+        await hopOnce();
+        if (run !== state.runId) return;
+        await wait(220);
+      }
+      showLanding();
+      await wait(300);
+      if (run !== state.runId) return;
+    }
+    revealAnswer();
+    setHint(`You landed on ${p.result}!`, true);
+    setTimeout(() => sfx.star(), 200);
+    speak(`${p.a} ${p.op === "+" ? "plus" : "minus"} ${p.b} equals ${p.result}. Great job!`);
+    earnStar();
+  } else {
+    btn.disabled = true;
+    btn.classList.add("wrong");
+    sfx.oops();
+    if (state.hops >= p.b) speak("Almost! Look where the frog is standing.");
+    else speak("Almost! Tap HOP and count!");
+    nudgeHop();
+  }
+}
+
+function nudgeHop() {
+  if (!state.problem || state.hops >= state.problem.b) return;
+  const btn = $("hopBtn");
+  btn.classList.remove("attn");
+  void btn.offsetWidth;
+  btn.classList.add("attn");
+}
+
+function flyStar(x, y, targetEl, onDone) {
+  const star = document.createElement("div");
+  star.className = "flyingStar";
+  star.textContent = "★";
+  star.style.left = `${x}px`;
+  star.style.top = `${y}px`;
+  document.body.appendChild(star);
+  const target = targetEl.getBoundingClientRect();
+  void star.offsetWidth;
+  requestAnimationFrame(() => {
+    star.style.left = `${target.left + target.width / 2}px`;
+    star.style.top = `${target.top + target.height / 2}px`;
+    star.style.transform = "translate(-50%, -50%) scale(0.4)";
+    star.style.opacity = "0.15";
+  });
+  setTimeout(() => {
+    star.remove();
+    if (onDone) onDone();
+  }, 860);
+}
+
+function earnStar() {
+  const pt = scene.createSVGPoint();
+  pt.x = xOf(state.pos);
+  pt.y = GROUND - 60;
+  const screen = pt.matrixTransform(scene.getScreenCTM());
+  flyStar(screen.x, screen.y, $("starPill"), () => {
+    state.stars++;
+    $("starCount").textContent = state.stars;
+    saveSettings();
+    if (state.stars % 5 === 0) setTimeout(() => milestone(state.stars), 150);
+  });
+}
+
+function earnBondStar() {
+  const rect = $("bondPartBCircle").getBoundingClientRect();
+  flyStar(rect.left + rect.width / 2, rect.top + rect.height / 2, $("bondStarPill"), () => {
+    bonds.stars++;
+    $("bondStarCount").textContent = bonds.stars;
+    bondsSave();
+    if (bonds.stars % 5 === 0) setTimeout(() => milestone(bonds.stars), 150);
+  });
+}
+
+function milestone(n) {
+  $("milestoneText").textContent = `${n} stars! Amazing!`;
+  $("milestone").classList.add("show");
+  sfx.cheer();
+  speak(`${n} stars! Amazing!`);
+}
+
+async function hop() {
+  if (state.phase !== "ready" || state.busy) return;
+  state.busy = true;
+  $("hopBtn").classList.remove("attn");
+  setButtons("busy");
+  await hopOnce();
+  state.busy = false;
+  if (state.hops >= state.problem.b) {
+    state.phase = "landed";
+    setButtons("landed");
+    showLanding();
+    await wait(320);
+    cancelSpeech();
+    speak(`You landed on ${state.problem.result}!`);
+  } else {
+    state.phase = "ready";
+    setButtons("ready");
+  }
+}
+
+async function showMe() {
+  if (state.phase !== "ready") return;
+  const run = state.runId;
+  state.phase = "busy";
+  $("hopBtn").classList.remove("attn");
+  setButtons("busy");
+  while (state.hops < state.problem.b) {
+    await hopOnce();
+    if (run !== state.runId) return;
+    await wait(300);
+  }
+  state.phase = "landed";
+  setButtons("landed");
+  showLanding();
+  await wait(320);
+  if (run !== state.runId) return;
+  cancelSpeech();
+  speak(`You landed on ${state.problem.result}!`);
+}
+
+function newProblem() {
+  state.runId++;
+  cancelSpeech();
+  clearArcs();
+  hideAnswers();
+  ringEl.setAttribute("opacity", 0);
+  $("hopBtn").classList.remove("attn");
+  const p = pickProblem();
+  state.problem = p;
+  state.pos = p.a;
+  state.hops = 0;
+  state.phase = "ready";
+  state.busy = false;
+  placeFrog(p.a);
+  renderProblem();
+  updateHint();
+  setButtons("ready");
+  showAnswers();
+  speakProblem();
+}
+
+function bondsLoadSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("nl-bonds-settings") || "{}");
+    if (saved.total === 10 || saved.total === 20) bonds.total = saved.total;
+    if (typeof saved.sound === "boolean") bonds.sound = saved.sound;
+    if (typeof saved.speech === "boolean") bonds.speech = saved.speech;
+    if (Number.isFinite(saved.stars)) bonds.stars = Math.max(0, Math.min(999, saved.stars));
+  } catch (err) {}
+  $("bondTotalSel").value = String(bonds.total);
+  $("bondStarCount").textContent = bonds.stars;
+  bondsSyncToggles();
+}
+
+function bondsSave() {
+  try {
+    localStorage.setItem("nl-bonds-settings", JSON.stringify({
+      total: bonds.total,
+      sound: bonds.sound,
+      speech: bonds.speech,
+      stars: bonds.stars
+    }));
+  } catch (err) {}
+}
+
+function bondsSyncToggles() {
+  const soundBtn = $("bondSoundBtn");
+  const speechBtn = $("bondSpeechBtn");
+  soundBtn.textContent = bonds.sound ? "🔊" : "🔇";
+  soundBtn.classList.toggle("off", !bonds.sound);
+  speechBtn.textContent = bonds.speech ? "🗣️" : "🤫";
+  speechBtn.classList.toggle("off", !bonds.speech);
+}
+
+function renderBondFrame() {
+  const frame = $("bondFrame");
+  frame.innerHTML = "";
+  for (let i = 0; i < bonds.total; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    if (i < bonds.partA) cell.classList.add("filled");
+    frame.appendChild(cell);
+  }
+}
+
+function renderBondProblem() {
+  $("bondProblem").innerHTML =
+    `<span class="num">${bonds.partA}</span>` +
+    `<span class="op plus">+</span>` +
+    `<span class="qmark">?</span>` +
+    `<span class="eq">=</span>` +
+    `<span class="num">${bonds.total}</span>`;
+  $("bondWholeText").textContent = String(bonds.total);
+  $("bondPartAText").textContent = String(bonds.partA);
+  $("bondPartBText").textContent = "?";
+  const circle = $("bondPartBCircle");
+  circle.setAttribute("fill", "#ffffff");
+  circle.setAttribute("stroke", "#a8c8dd");
+  circle.setAttribute("stroke-dasharray", "9 8");
+}
+
+function revealBondProblem() {
+  $("bondProblem").innerHTML =
+    `<span class="num">${bonds.partA}</span>` +
+    `<span class="op plus">+</span>` +
+    `<span class="ans">${bonds.missing}</span>` +
+    `<span class="eq">=</span>` +
+    `<span class="num">${bonds.total}</span>`;
+  $("bondPartBText").textContent = String(bonds.missing);
+  const circle = $("bondPartBCircle");
+  circle.setAttribute("fill", "#fff3d6");
+  circle.setAttribute("stroke", "#d99f00");
+  circle.setAttribute("stroke-dasharray", "none");
+}
+
+function showBondAnswers() {
+  const box = $("bondAnswers");
+  const options = new Set([bonds.missing]);
+  const pool = [];
+  for (let d = 1; d <= 6 && pool.length < 12; d++) {
+    if (bonds.missing - d >= 1) pool.push(bonds.missing - d);
+    if (bonds.missing + d <= bonds.total - 1) pool.push(bonds.missing + d);
+  }
+  shuffle(pool);
+  while (options.size < 3 && pool.length) options.add(pool.pop());
+  const buttons = shuffle([...options]);
+  box.innerHTML = "";
+  buttons.forEach((n, i) => {
+    const btn = document.createElement("button");
+    btn.className = "answerBtn";
+    btn.textContent = String(n);
+    btn.style.animationDelay = `${i * 60}ms`;
+    btn.addEventListener("click", () => answerBond(btn, n));
+    box.appendChild(btn);
+  });
+}
+
+function setBondHint(text, win) {
+  const hint = $("bondHint");
+  hint.textContent = text;
+  hint.classList.toggle("win", !!win);
+}
+
+function setBondButtons(phase) {
+  const full = bonds.filled >= bonds.total;
+  $("bondCountBtn").disabled = phase !== "ready" || full;
+  $("bondShowBtn").disabled = phase !== "ready" || full;
+  $("bondNextBtn").classList.toggle("show", phase === "won");
+}
+
+function speakBondProblem() {
+  speak(`${bonds.partA} and how many more make ${bonds.total}?`);
+}
+
+async function fillOneCounter() {
+  if (bonds.filled >= bonds.total) return;
+  const cell = $("bondFrame").children[bonds.filled];
+  bonds.filled++;
+  cell.classList.add("filled", "gold", "pop");
+  sfx.tick();
+  speak(WORDS[bonds.filled - bonds.partA] || String(bonds.filled - bonds.partA));
+  await wait(430);
+}
+
+function newBond() {
+  bonds.runId++;
+  cancelSpeech();
+  const total = bonds.total;
+  const minA = Math.max(1, total - 10);
+  let partA = ri(minA, total - 1);
+  for (let i = 0; i < 50 && `${total}-${partA}` === bonds.lastKey; i++) {
+    partA = ri(minA, total - 1);
+  }
+  bonds.lastKey = `${total}-${partA}`;
+  bonds.partA = partA;
+  bonds.missing = total - partA;
+  bonds.filled = partA;
+  bonds.phase = "ready";
+  bonds.busy = false;
+  $("bondCountBtn").classList.remove("attn");
+  $("bondsStage").classList.remove("pulse");
+  renderBondFrame();
+  renderBondProblem();
+  setBondHint(`How many more make ${total}?`);
+  setBondButtons("ready");
+  showBondAnswers();
+  speakBondProblem();
+}
+
+async function countOne() {
+  if (bonds.phase !== "ready" || bonds.busy) return;
+  if (bonds.filled >= bonds.total) return;
+  const run = bonds.runId;
+  bonds.busy = true;
+  $("bondCountBtn").classList.remove("attn");
+  setBondButtons("busy");
+  await fillOneCounter();
+  if (run !== bonds.runId) return;
+  bonds.busy = false;
+  setBondButtons("ready");
+  if (bonds.filled >= bonds.total) setBondHint("Now tap the number you counted to!", true);
+}
+
+async function showMeBonds() {
+  if (bonds.phase !== "ready" || bonds.busy) return;
+  const run = bonds.runId;
+  bonds.busy = true;
+  $("bondCountBtn").classList.remove("attn");
+  setBondButtons("busy");
+  while (bonds.filled < bonds.total && run === bonds.runId) {
+    await fillOneCounter();
+  }
+  if (run !== bonds.runId) return;
+  bonds.busy = false;
+  setBondButtons("ready");
+  if (bonds.filled >= bonds.total) setBondHint("Now tap the number you counted to!", true);
+}
+
+async function answerBond(btn, n) {
+  if (bonds.phase !== "ready" || bonds.busy) return;
+  if (n === bonds.missing) {
+    bonds.phase = "won";
+    [...$("bondAnswers").children].forEach(b => { b.disabled = true; });
+    btn.classList.add("correct");
+    setBondButtons("won");
+    sfx.win();
+    const run = bonds.runId;
+    if (bonds.filled < bonds.total) {
+      speak("Yes!");
+      await wait(450);
+      if (run !== bonds.runId) return;
+      while (bonds.filled < bonds.total && run === bonds.runId) {
+        await fillOneCounter();
+      }
+      if (run !== bonds.runId) return;
+    }
+    revealBondProblem();
+    setBondHint(`${bonds.partA} and ${bonds.missing} make ${bonds.total}!`, true);
+    setTimeout(() => sfx.star(), 180);
+    speak(`${bonds.partA} plus ${bonds.missing} equals ${bonds.total}. Great job!`);
+    earnBondStar();
+  } else {
+    btn.disabled = true;
+    btn.classList.add("wrong");
+    sfx.oops();
+    speak("Almost! Count the empty boxes.");
+    nudgeCount();
+  }
+}
+
+function nudgeCount() {
+  if (bonds.phase !== "ready" || bonds.filled >= bonds.total) return;
+  const btn = $("bondCountBtn");
+  btn.classList.remove("attn");
+  void btn.offsetWidth;
+  btn.classList.add("attn");
+}
+
+function numWord(n) {
+  if (n <= 20) return WORDS[n] || String(n);
+  if (n >= 100) return "one hundred";
+  const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+  const t = Math.floor(n / 10);
+  const o = n % 10;
+  return tens[t] + (o ? `-${WORDS[o]}` : "");
+}
+
+function timesLoadSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("nl-times-settings") || "{}");
+    if (["2", "3", "4", "5", "6", "7", "8", "9", "10", "mix25", "mix210"].includes(saved.table)) times.table = saved.table;
+    if (saved.maxGroups === 5 || saved.maxGroups === 10) times.maxGroups = saved.maxGroups;
+    if (typeof saved.sound === "boolean") times.sound = saved.sound;
+    if (typeof saved.speech === "boolean") times.speech = saved.speech;
+    if (Number.isFinite(saved.stars)) times.stars = Math.max(0, Math.min(999, saved.stars));
+  } catch (err) {}
+  $("tableSel").value = times.table;
+  $("groupsSel").value = String(times.maxGroups);
+  $("timesStarCount").textContent = times.stars;
+  timesSyncToggles();
+}
+
+function timesSave() {
+  try {
+    localStorage.setItem("nl-times-settings", JSON.stringify({
+      table: times.table,
+      maxGroups: times.maxGroups,
+      sound: times.sound,
+      speech: times.speech,
+      stars: times.stars
+    }));
+  } catch (err) {}
+}
+
+function timesSyncToggles() {
+  const soundBtn = $("timesSoundBtn");
+  const speechBtn = $("timesSpeechBtn");
+  soundBtn.textContent = times.sound ? "🔊" : "🔇";
+  soundBtn.classList.toggle("off", !times.sound);
+  speechBtn.textContent = times.speech ? "🗣️" : "🤫";
+  speechBtn.classList.toggle("off", !times.speech);
+}
+
+function pickTable() {
+  if (times.table === "mix25") return ri(2, 5);
+  if (times.table === "mix210") return ri(2, 10);
+  return parseInt(times.table, 10);
+}
+
+function renderTimesArray() {
+  const svg = $("timesScene");
+  svg.innerHTML = "";
+  const n = times.groups;
+  const s = times.size;
+  const pad = 30;
+  const cell = Math.min((1000 - pad * 2) / s, (560 - pad * 2) / n, 130);
+  const w = s * cell;
+  const h = n * cell;
+  const x0 = (1000 - w) / 2;
+  const y0 = (560 - h) / 2;
+  const r = Math.min(cell * 0.32, 34);
+  times.dotEls = [];
+  times.rectEls = [];
+  for (let j = 0; j < n; j++) {
+    const ry = y0 + j * cell;
+    const rect = svgEl("rect", {
+      x: x0 + 4,
+      y: ry + 4,
+      width: w - 8,
+      height: cell - 8,
+      rx: Math.min((cell - 8) * 0.35, 30),
+      fill: "#f7fbfe",
+      stroke: "#dbe9f4",
+      "stroke-width": 3
+    });
+    svg.appendChild(rect);
+    times.rectEls.push(rect);
+    const dots = [];
+    for (let i = 0; i < s; i++) {
+      const dot = svgEl("circle", {
+        cx: x0 + (i + 0.5) * cell,
+        cy: ry + cell / 2,
+        r: r,
+        fill: "#e9f1f8",
+        stroke: "#cfdfec",
+        "stroke-width": 2.5
+      });
+      svg.appendChild(dot);
+      dots.push(dot);
+    }
+    times.dotEls.push(dots);
+  }
+}
+
+function renderTimesProblem() {
+  $("timesProblem").innerHTML =
+    `<span class="num">${times.groups}</span>` +
+    `<span class="op times">×</span>` +
+    `<span class="num">${times.size}</span>` +
+    `<span class="eq">=</span>` +
+    `<span class="qmark">?</span>`;
+}
+
+function revealTimesProblem() {
+  $("timesProblem").innerHTML =
+    `<span class="num">${times.groups}</span>` +
+    `<span class="op times">×</span>` +
+    `<span class="num">${times.size}</span>` +
+    `<span class="eq">=</span>` +
+    `<span class="ans">${times.groups * times.size}</span>`;
+}
+
+function showTimesAnswers() {
+  const correct = times.groups * times.size;
+  const box = $("timesAnswers");
+  const options = new Set([correct]);
+  const sizeOpts = [];
+  if (correct - times.size >= 1) sizeOpts.push(correct - times.size);
+  if (correct + times.size <= 100) sizeOpts.push(correct + times.size);
+  shuffle(sizeOpts);
+  if (sizeOpts.length) options.add(sizeOpts.pop());
+  const pool = [...sizeOpts];
+  if (correct - 1 >= 1) pool.push(correct - 1);
+  if (correct + 1 <= 100) pool.push(correct + 1);
+  shuffle(pool);
+  while (options.size < 3 && pool.length) options.add(pool.pop());
+  const buttons = shuffle([...options]);
+  box.innerHTML = "";
+  buttons.forEach((n, i) => {
+    const btn = document.createElement("button");
+    btn.className = "answerBtn";
+    btn.textContent = String(n);
+    btn.style.animationDelay = `${i * 60}ms`;
+    btn.addEventListener("click", () => answerTimes(btn, n));
+    box.appendChild(btn);
+  });
+}
+
+function setTimesHint(text, win) {
+  const hint = $("timesHint");
+  hint.textContent = text;
+  hint.classList.toggle("win", !!win);
+}
+
+function setTimesButtons(phase) {
+  const full = times.revealed >= times.groups;
+  $("timesGroupBtn").disabled = phase !== "ready" || full;
+  $("timesShowBtn").disabled = phase !== "ready" || full;
+  $("timesNextBtn").classList.toggle("show", phase === "won");
+}
+
+function updateTimesHint() {
+  if (times.revealed === 0) {
+    setTimesHint(`${times.groups} ${times.groups === 1 ? "group" : "groups"} of ${times.size}. How many altogether?`);
+  } else if (times.revealed < times.groups) {
+    setTimesHint(`Group ${times.revealed} of ${times.groups}: ${times.revealed * times.size} so far`);
+  } else {
+    setTimesHint("Now tap the number you counted to!", true);
+  }
+}
+
+function speakTimesProblem() {
+  speak(`${times.groups} ${times.groups === 1 ? "group" : "groups"} of ${times.size}. How many altogether?`);
+}
+
+async function revealGroup(j) {
+  const run = times.runId;
+  const dots = times.dotEls[j];
+  times.rectEls[j].setAttribute("fill", "#eaf4fe");
+  times.rectEls[j].setAttribute("stroke", "#bcd9f5");
+  for (let i = 0; i < dots.length; i++) {
+    if (run !== times.runId) return;
+    dots[i].setAttribute("fill", "#6fb4f2");
+    dots[i].setAttribute("stroke", "#4b9be8");
+    dots[i].classList.add("mPop");
+    sfx.tick();
+    await wait(85);
+  }
+  if (run !== times.runId) return;
+  speak(numWord((j + 1) * times.size));
+  await wait(260);
+}
+
+function newTimesProblem() {
+  times.runId++;
+  cancelSpeech();
+  const size = pickTable();
+  let g = ri(1, times.maxGroups);
+  for (let i = 0; i < 50 && `${g}x${size}` === times.lastKey; i++) {
+    g = ri(1, times.maxGroups);
+  }
+  times.lastKey = `${g}x${size}`;
+  times.groups = g;
+  times.size = size;
+  times.revealed = 0;
+  times.phase = "ready";
+  times.busy = false;
+  $("timesGroupBtn").classList.remove("attn");
+  renderTimesArray();
+  renderTimesProblem();
+  updateTimesHint();
+  setTimesButtons("ready");
+  showTimesAnswers();
+  speakTimesProblem();
+}
+
+async function nextGroup() {
+  if (times.phase !== "ready" || times.busy) return;
+  if (times.revealed >= times.groups) return;
+  const run = times.runId;
+  times.busy = true;
+  $("timesGroupBtn").classList.remove("attn");
+  setTimesButtons("busy");
+  const j = times.revealed;
+  times.revealed++;
+  await revealGroup(j);
+  if (run !== times.runId) return;
+  times.busy = false;
+  setTimesButtons("ready");
+  updateTimesHint();
+}
+
+async function showMeTimes() {
+  if (times.phase !== "ready" || times.busy) return;
+  const run = times.runId;
+  times.busy = true;
+  $("timesGroupBtn").classList.remove("attn");
+  setTimesButtons("busy");
+  while (times.revealed < times.groups && run === times.runId) {
+    const j = times.revealed;
+    times.revealed++;
+    await revealGroup(j);
+    if (run !== times.runId) return;
+    updateTimesHint();
+  }
+  if (run !== times.runId) return;
+  times.busy = false;
+  setTimesButtons("ready");
+}
+
+async function answerTimes(btn, n) {
+  if (times.phase !== "ready" || times.busy) return;
+  const correct = times.groups * times.size;
+  if (n === correct) {
+    times.phase = "won";
+    [...$("timesAnswers").children].forEach(b => { b.disabled = true; });
+    btn.classList.add("correct");
+    setTimesButtons("won");
+    sfx.win();
+    const run = times.runId;
+    if (times.revealed < times.groups) {
+      speak("Yes!");
+      await wait(450);
+      if (run !== times.runId) return;
+      while (times.revealed < times.groups && run === times.runId) {
+        const j = times.revealed;
+        times.revealed++;
+        await revealGroup(j);
+      }
+      if (run !== times.runId) return;
+    }
+    revealTimesProblem();
+    setTimesHint(`${times.groups} ${times.groups === 1 ? "group" : "groups"} of ${times.size} make ${correct}!`, true);
+    setTimeout(() => sfx.star(), 180);
+    speak(`${times.groups} times ${times.size} equals ${correct}. Great job!`);
+    earnTimesStar();
+  } else {
+    btn.disabled = true;
+    btn.classList.add("wrong");
+    sfx.oops();
+    if (times.revealed >= times.groups) speak("Almost! Count the groups again.");
+    else speak("Almost! Tap GROUP and count!");
+    nudgeTimes();
+  }
+}
+
+function nudgeTimes() {
+  if (times.phase !== "ready" || times.revealed >= times.groups) return;
+  const btn = $("timesGroupBtn");
+  btn.classList.remove("attn");
+  void btn.offsetWidth;
+  btn.classList.add("attn");
+}
+
+function earnTimesStar() {
+  const rect = $("timesScene").getBoundingClientRect();
+  flyStar(rect.left + rect.width / 2, rect.top + rect.height / 2, $("timesStarPill"), () => {
+    times.stars++;
+    $("timesStarCount").textContent = times.stars;
+    timesSave();
+    if (times.stars % 5 === 0) setTimeout(() => milestone(times.stars), 150);
+  });
+}
+
+function readStars(key) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) || "{}");
+    return Number.isFinite(saved.stars) ? saved.stars : 0;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function refreshHome() {
+  $("cardLineStars").textContent = readStars("nl-frog-settings");
+  $("cardBondsStars").textContent = readStars("nl-bonds-settings");
+  $("cardTimesStars").textContent = readStars("nl-times-settings");
+}
+
+function showScreen(name) {
+  currentScreen = name;
+  cancelSpeech();
+  state.runId++;
+  state.phase = "idle";
+  state.busy = false;
+  bonds.runId++;
+  bonds.phase = "idle";
+  bonds.busy = false;
+  times.runId++;
+  times.phase = "idle";
+  times.busy = false;
+  $("screenHome").classList.toggle("hidden", name !== "home");
+  $("screenLine").classList.toggle("hidden", name !== "line");
+  $("screenBonds").classList.toggle("hidden", name !== "bonds");
+  $("screenTimes").classList.toggle("hidden", name !== "times");
+  if (name === "line") {
+    document.title = "Number Line";
+    newProblem();
+  } else if (name === "bonds") {
+    document.title = "Number Bonds";
+    newBond();
+  } else if (name === "times") {
+    document.title = "Times Tables";
+    newTimesProblem();
+  } else {
+    document.title = "Math Play";
+    refreshHome();
+  }
+}
+
+const HELP_CONTENT = {
+  line: {
+    title: "Number Line",
+    items: [
+      "Read the problem at the top together.",
+      "Try to answer first: tap the number you think is right. You can tap any time.",
+      "Tap <b>HOP</b> to check. The frog moves one space at a time.",
+      "For <b style=\"color:#2f80ed\">plus</b> the frog hops right. For <b style=\"color:#e8720c\">minus</b> it hops left.",
+      "Count the hops out loud: one, two, three.",
+      "If a number was not right, hop and count to check.",
+      "<b>Show me</b> plays the whole problem for you.",
+      "Choose the range, hops, sign, sound and voice at the top."
+    ]
+  },
+  bonds: {
+    title: "Number Bonds",
+    items: [
+      "The big number is the whole. Both parts together make the whole.",
+      "One part is shown. Find the missing part.",
+      "Tap <b>COUNT</b> to fill one box at a time. Count out loud as they fill.",
+      "<b>Show me</b> fills all the boxes for you.",
+      "Then tap the number that makes the whole.",
+      "If a number was not right, count the empty boxes to check.",
+      "Choose bonds to 10 or 20, sound and voice at the top."
+    ]
+  },
+  times: {
+    title: "Times Tables",
+    items: [
+      "<b>3 × 4</b> means 3 groups of 4.",
+      "Tap <b>GROUP</b> to show one more group. The blue dots count up.",
+      "Count out loud as the groups fill: 4, 8, 12... The last number is the answer.",
+      "<b>Show me</b> fills all the groups for you.",
+      "Then tap the number that tells how many altogether.",
+      "If a number was not right, tap GROUP again and count the groups.",
+      "Choose a table and how many groups at the top."
+    ]
+  }
+};
+
+function openHelp() {
+  const content = HELP_CONTENT[currentScreen] || HELP_CONTENT.line;
+  $("helpTitle").textContent = content.title;
+  $("helpList").innerHTML = content.items.map(item => `<li>${item}</li>`).join("");
+  $("help").classList.add("show");
+}
+
+$("cardLine").addEventListener("click", () => { showScreen("line"); sfx.tap(); });
+$("cardBonds").addEventListener("click", () => { showScreen("bonds"); sfx.tap(); });
+$("cardTimes").addEventListener("click", () => { showScreen("times"); sfx.tap(); });
+$("lineHomeBtn").addEventListener("click", () => { sfx.tap(); showScreen("home"); });
+$("bondHomeBtn").addEventListener("click", () => { sfx.tap(); showScreen("home"); });
+$("timesHomeBtn").addEventListener("click", () => { sfx.tap(); showScreen("home"); });
+
+$("bondCountBtn").addEventListener("click", countOne);
+$("bondShowBtn").addEventListener("click", showMeBonds);
+$("bondNextBtn").addEventListener("click", newBond);
+$("bondRepeatBtn").addEventListener("click", speakBondProblem);
+
+$("bondSoundBtn").addEventListener("click", () => {
+  bonds.sound = !bonds.sound;
+  bondsSyncToggles();
+  bondsSave();
+  sfx.tap();
+});
+
+$("bondSpeechBtn").addEventListener("click", () => {
+  bonds.speech = !bonds.speech;
+  bondsSyncToggles();
+  bondsSave();
+  if (bonds.speech) speak("Voice on.");
+  else cancelSpeech();
+});
+
+$("bondTotalSel").addEventListener("change", e => {
+  bonds.total = parseInt(e.target.value, 10);
+  bondsSave();
+  newBond();
+});
+
+$("bondHelpBtn").addEventListener("click", () => {
+  sfx.tap();
+  openHelp();
+});
+
+$("timesGroupBtn").addEventListener("click", nextGroup);
+$("timesShowBtn").addEventListener("click", showMeTimes);
+$("timesNextBtn").addEventListener("click", newTimesProblem);
+$("timesRepeatBtn").addEventListener("click", speakTimesProblem);
+
+$("timesSoundBtn").addEventListener("click", () => {
+  times.sound = !times.sound;
+  timesSyncToggles();
+  timesSave();
+  sfx.tap();
+});
+
+$("timesSpeechBtn").addEventListener("click", () => {
+  times.speech = !times.speech;
+  timesSyncToggles();
+  timesSave();
+  if (times.speech) speak("Voice on.");
+  else cancelSpeech();
+});
+
+$("tableSel").addEventListener("change", e => {
+  times.table = e.target.value;
+  timesSave();
+  newTimesProblem();
+});
+
+$("groupsSel").addEventListener("change", e => {
+  times.maxGroups = parseInt(e.target.value, 10);
+  timesSave();
+  newTimesProblem();
+});
+
+$("timesHelpBtn").addEventListener("click", () => {
+  sfx.tap();
+  openHelp();
+});
+
+$("hopBtn").addEventListener("click", hop);
+$("showBtn").addEventListener("click", showMe);
+$("nextBtn").addEventListener("click", newProblem);
+$("repeatBtn").addEventListener("click", speakProblem);
+
+$("soundBtn").addEventListener("click", () => {
+  state.sound = !state.sound;
+  syncToggles();
+  saveSettings();
+  sfx.tap();
+});
+
+$("speechBtn").addEventListener("click", () => {
+  state.speech = !state.speech;
+  syncToggles();
+  saveSettings();
+  if (state.speech) speak("Voice on.");
+  else cancelSpeech();
+});
+
+$("rangeSel").addEventListener("change", e => {
+  state.max = parseInt(e.target.value, 10);
+  saveSettings();
+  buildLine();
+  newProblem();
+});
+
+$("hopsSel").addEventListener("change", e => {
+  state.hopSize = e.target.value;
+  saveSettings();
+  newProblem();
+});
+
+$("opSel").addEventListener("change", e => {
+  state.opMode = e.target.value;
+  saveSettings();
+  newProblem();
+});
+
+$("helpBtn").addEventListener("click", () => {
+  sfx.tap();
+  openHelp();
+});
+
+$("helpClose").addEventListener("click", () => {
+  sfx.tap();
+  $("help").classList.remove("show");
+});
+
+$("milestoneClose").addEventListener("click", () => {
+  sfx.tap();
+  $("milestone").classList.remove("show");
+});
+
+window.addEventListener("keydown", e => {
+  if (e.target instanceof Element && e.target.closest("button, select")) return;
+  if (e.code !== "Space" && e.code !== "Enter") return;
+  if (currentScreen === "line") {
+    if (state.phase === "ready") {
+      e.preventDefault();
+      hop();
+    } else if (state.phase === "won") {
+      e.preventDefault();
+      newProblem();
+    }
+  } else if (currentScreen === "bonds") {
+    if (bonds.phase === "ready" && bonds.filled < bonds.total) {
+      e.preventDefault();
+      countOne();
+    } else if (bonds.phase === "won") {
+      e.preventDefault();
+      newBond();
+    }
+  } else if (currentScreen === "times") {
+    if (times.phase === "ready" && times.revealed < times.groups) {
+      e.preventDefault();
+      nextGroup();
+    } else if (times.phase === "won") {
+      e.preventDefault();
+      newTimesProblem();
+    }
+  }
+});
+
+window.addEventListener("pointerdown", () => { audio(); }, { once: true });
+
+loadSettings();
+bondsLoadSettings();
+timesLoadSettings();
+buildLine();
+showScreen("home");
+</script>
+</body>
+</html>

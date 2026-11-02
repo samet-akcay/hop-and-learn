@@ -1,0 +1,35 @@
+{
+  "name": "space-base-maths",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test --project=chromium --project=webkit",
+    "test:e2e:all": "playwright test",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "check": "npm run build && npm test",
+    "check:full": "npm run check && npm run test:e2e",
+    "serve:local": "node scripts/serve.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "install:agent": "node scripts/install-agent.mjs"
+  },
+  "dependencies": {
+    "preact": "^10.26.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@testing-library/preact": "^3.2.4",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.13.10",
+    "fake-indexeddb": "^6.2.6",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.5",
+    "vitest": "^4.1.12"
+  }
+}
