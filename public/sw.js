@@ -1,5 +1,5 @@
 // Paths are relative to this file, so the app works at any address (localhost or GitHub Pages).
-const CACHE = "hop-and-learn-v1";
+const CACHE = "hop-and-learn-v2";
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(["./", "./manifest.webmanifest"])).then(() => self.skipWaiting()));
 });
@@ -11,7 +11,8 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
   if (request.mode === "navigate") {
-    event.respondWith(fetch(request).then(response => {
+    // Skip the browser's HTTP cache (GitHub Pages allows 10 minutes), so a new version shows on the next open.
+    event.respondWith(fetch(request.url, { cache: "no-cache", credentials: "same-origin" }).then(response => {
       if (!response.ok) return response;
       return caches.open(CACHE).then(cache => cache.put("./", response.clone())).then(() => response);
     }).catch(async () => (await caches.match(request)) ?? (await caches.match("./"))));

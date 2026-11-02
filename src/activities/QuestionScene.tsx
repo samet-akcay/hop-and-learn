@@ -96,7 +96,7 @@ function workText(question: GeneratedQuestion, steps: number, complete: boolean)
   if (question.visual === "numberline") {
     const landed = num(question, "start") + (str(question, "op", "+") === "+" ? steps : -steps) * num(question, "jumpSize", 1);
     if (complete) return `We landed on ${landed}!`;
-    return steps ? `Hop ${steps} of ${num(question, "amount")}` : `Need help? Press HOP ${num(question, "amount")} times.`;
+    return steps ? `Hop ${steps} of ${num(question, "amount")}` : `Need help? Press HOP ${num(question, "amount")} ${num(question, "amount") === 1 ? "time" : "times"}.`;
   }
   if (question.visual === "bonds") return complete ? `We counted ${steps} more.` : steps ? `${steps} more` : "Need help? Press COUNT.";
   return complete ? `${num(question, "groups")} groups of ${num(question, "table")}` : steps ? `Group ${steps} of ${num(question, "groups")}` : "Need help? Press GROUP.";
