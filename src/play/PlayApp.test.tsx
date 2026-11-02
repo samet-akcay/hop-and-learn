@@ -33,10 +33,18 @@ describe("Hop & Learn", () => {
     expect(screen.getByRole("button", { name: "Sentence Builder", exact: true })).toBeTruthy();
   });
 
-  it("asks him to hop first, then shows three big answers, and gives a star for the right one", async () => {
+  it("shows three big answers straight away, so he can answer without hopping", async () => {
     const user = await openNumberLine();
     expect(document.querySelector(".numberline-svg")).toBeTruthy();
-    expect(document.querySelector(".big-choices")).toBeNull();
+    expect(document.querySelectorAll(".big-choice")).toHaveLength(3);
+    const [start, op, amount] = document.querySelector(".play-question h1")!.textContent!.split(" ");
+    const answer = String(op === "+" ? Number(start) + Number(amount) : Number(start) - Number(amount));
+    await user.click(screen.getByRole("button", { name: answer }));
+    expect(screen.getByRole("heading", { name: "We did it!" })).toBeTruthy();
+  });
+
+  it("lets him hop to work it out, then gives a star for the right one", async () => {
+    const user = await openNumberLine();
     await hopToTheEnd(user);
     const answers = [...document.querySelectorAll<HTMLButtonElement>(".big-choice")];
     expect(answers).toHaveLength(3);

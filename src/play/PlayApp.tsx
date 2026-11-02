@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import { ACTIVITIES, ACTIVITY_BY_ID, SUITS } from "../content/catalogue";
 import { AnswerInput } from "../activities/AnswerInput";
 import { HERO_NAMES, HeroAvatar } from "../activities/HeroCharacter";
-import { QuestionScene, WORK_VISUALS } from "../activities/QuestionScene";
+import { QuestionScene } from "../activities/QuestionScene";
 import { makeRng } from "../core/rng";
 import { playSound, type SfxName } from "../core/sound";
 import { speak, stopSpeaking } from "../core/speech";
@@ -95,21 +95,18 @@ function GameScreen({ activityId, data, voice, sound, onStar, onHome }: {
   const rng = useRef(makeRng(Date.now()));
   const recent = useRef<string[]>([]);
   const [question, setQuestion] = useState(() => makeQuestion(activityId, data.settings, rng.current));
-  const [worked, setWorked] = useState(false);
   const [wrong, setWrong] = useState<string[]>([]);
   const [attempts, setAttempts] = useState(0);
   const [solved, setSolved] = useState(false);
   const [milestone, setMilestone] = useState(false);
   const activity = ACTIVITY_BY_ID.get(activityId)!;
-  const hasTool = WORK_VISUALS.includes(question.visual);
-  const answersReady = !hasTool || worked;
 
   useEffect(() => { void speak(question.spoken, voice); }, [question.key]);
 
   const next = () => {
     recent.current = [...recent.current, question.key].slice(-8);
     setQuestion(makeQuestion(activityId, data.settings, rng.current, recent.current));
-    setWorked(false); setWrong([]); setAttempts(0); setSolved(false);
+    setWrong([]); setAttempts(0); setSolved(false);
   };
   const submit = (answer: string) => {
     if (solved) return;
@@ -131,7 +128,7 @@ function GameScreen({ activityId, data, voice, sound, onStar, onHome }: {
     const onKey = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select")) return;
       if (solved && !milestone && event.key === "Enter") { event.preventDefault(); next(); return; }
-      const choice = question.answerKind === "choice" && answersReady && !solved ? question.choices?.[Number(event.key) - 1] : undefined;
+      const choice = question.answerKind === "choice" && !solved ? question.choices?.[Number(event.key) - 1] : undefined;
       if (choice !== undefined && !wrong.includes(choice)) { event.preventDefault(); submit(choice); }
     };
     window.addEventListener("keydown", onKey);
@@ -151,11 +148,11 @@ function GameScreen({ activityId, data, voice, sound, onStar, onHome }: {
       </div>
       {question.instruction && !solved && <p class="play-instruction">{question.instruction}</p>}
       <QuestionScene key={question.key} question={question} suit={data.hero} level={1} solved={solved}
-        onWorkComplete={() => setWorked(true)} onStep={() => sound("step")} />
+        onWorkComplete={() => undefined} onStep={() => sound("step")} />
       {attempts > 0 && !solved && <p class="play-mistake" role="status">{MISTAKE_LINE}</p>}
       {solved
         ? <div class="play-success" role="status"><span class="star-pop" aria-hidden="true">★</span><h2>{attempts ? "We fixed it!" : "We did it!"}</h2><p>{question.model}</p><button class="next-button" onClick={next}>Next <span>→</span></button></div>
-        : answersReady && (question.answerKind === "choice" && question.choices
+        : (question.answerKind === "choice" && question.choices
           ? <div class="big-choices" role="group" aria-label="Choose an answer">{question.choices.map(choice => <button key={choice} class={`big-choice ${choice.length > 5 ? "wordy" : ""}`} disabled={wrong.includes(choice)} onClick={() => submit(choice)}>{choice}{question.unit === "p" || question.unit === "cm" ? <small>{question.unit}</small> : null}</button>)}</div>
           : <div class="play-answer"><AnswerInput key={`${question.key}-${attempts}`} question={question} disabled={false} onSubmit={submit} /></div>)}
     </main>
