@@ -29,13 +29,14 @@ export function skillPool(activityId: ActivityId, difficulty: PlaySettings["diff
 }
 
 function numberLine(settings: PlaySettings, rng: Rng): GeneratedQuestion {
+  const limit = settings.numberLineMax ?? settings.maxNumber;
   const op = settings.numberLineOps === "add" ? "+" : settings.numberLineOps === "sub" ? "−" : rng.pick(["+", "−"]);
-  const amount = rng.int(1, Math.min(settings.maxHops, settings.maxNumber - 1));
-  const start = op === "+" ? rng.int(0, settings.maxNumber - amount) : rng.int(amount, settings.maxNumber);
+  const amount = rng.int(1, Math.min(settings.maxHops, limit - 1));
+  const start = op === "+" ? rng.int(0, limit - amount) : rng.int(amount, limit);
   const result = op === "+" ? start + amount : start - amount;
-  // On a line to 100 the hero hops along a 20-wide window, so every hop is easy to see.
-  const min = settings.maxNumber > 20 ? Math.max(0, Math.min(Math.floor(Math.min(start, result) / 10) * 10, 80)) : 0;
-  const max = settings.maxNumber > 20 ? min + 20 : settings.maxNumber;
+  // Above 20, show a crisp 20-wide window clamped inside 0..limit so every hop stays large and clear.
+  const min = limit > 20 ? Math.max(0, Math.min(Math.floor(Math.min(start, result) / 10) * 10, limit - 20)) : 0;
+  const max = limit > 20 ? min + 20 : limit;
   const way = op === "+" ? "right" : "left";
   return {
     key: `nl-${start}${op}${amount}`, activityId: "numberline", skillId: op === "+" ? "nl.count-on" : "nl.count-back", level: 1,
@@ -63,7 +64,8 @@ function bonds(settings: PlaySettings, rng: Rng): GeneratedQuestion {
 
 function times(settings: PlaySettings, rng: Rng): GeneratedQuestion {
   const table = rng.pick(settings.tables.length ? settings.tables : [2]);
-  const groups = rng.int(1, settings.maxNumber === 10 ? 5 : 10);
+  const maxGroups = settings.maxNumber === 10 ? Math.min(5, settings.maxGroups) : settings.maxGroups;
+  const groups = rng.int(1, maxGroups);
   const total = groups * table;
   return {
     key: `tt-${groups}x${table}`, activityId: "times", skillId: `tt.x${table}`, level: 1,
@@ -74,6 +76,13 @@ function times(settings: PlaySettings, rng: Rng): GeneratedQuestion {
     visual: "array", data: { groups, table, total },
   };
 }
+
+const FRACTION_POOLS: Record<PlaySettings["fractionFocus"], string[]> = {
+  shapes: ["fr.equal", "fr.shapes"],
+  sharing: ["fr.equal", "fr.shapes", "fr.sets"],
+  wall: ["fr.equal", "fr.shapes", "fr.sets", "fr.equivalent"],
+  all: ["fr.equal", "fr.shapes", "fr.sets", "fr.equivalent", "fr.line"],
+};
 
 function compare(settings: PlaySettings, rng: Rng): GeneratedQuestion {
   const a = rng.int(0, settings.maxNumber);
@@ -109,7 +118,7 @@ export function makeQuestion(activityId: ActivityId, settings: PlaySettings, rng
   else if (activityId === "times") question = times(settings, rng);
   else if (activityId === "compare") question = compare(settings, rng);
   else {
-    const pool = skillPool(activityId, settings.difficulty);
+    const pool = activityId === "fractions" ? FRACTION_POOLS[settings.fractionFocus] : skillPool(activityId, settings.difficulty);
     const capped = CAPPED.has(activityId);
     let best: GeneratedQuestion | undefined;
     for (let attempt = 0; attempt < 40; attempt++) {
@@ -129,7 +138,9 @@ export function makeQuestion(activityId: ActivityId, settings: PlaySettings, rng
     question = { ...question, answerKind: "choice", choices: picks.sort(() => (rng.int(0, 1) ? 1 : -1)) };
   }
   if (question.answerKind === "number" && !question.choices && /^\d+$/.test(question.answer)) {
-    const limit = CAPPED.has(activityId) ? settings.maxNumber : Number(question.answer) + 10;
+    const limit = activityId === "numberline"
+      ? (settings.numberLineMax ?? settings.maxNumber)
+      : CAPPED.has(activityId) ? settings.maxNumber : Number(question.answer) + 10;
     question = { ...question, answerKind: "choice", choices: numberChoices(Number(question.answer), limit, rng) };
   }
   return question;

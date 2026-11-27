@@ -60,4 +60,39 @@ describe("Hop & Learn questions", () => {
       if (question.skillId === "mn.coins") question.choices!.forEach(choice => expect(["1", "2", "5", "10", "20", "50"]).toContain(choice));
     }
   });
+
+  it("supports dedicated Number Line ranges (10, 20, 30, 50, 100) with valid visible windows", () => {
+    for (const numberLineMax of [10, 20, 30, 50, 100] as const) {
+      const settings: PlaySettings = { ...DEFAULT_PLAY_SETTINGS, maxNumber: 20, numberLineMax, maxHops: 10 };
+      for (let i = 0; i < 150; i++) {
+        const q = makeQuestion("numberline", settings, makeRng(i * 19 + numberLineMax));
+        const start = Number(q.data.start), result = Number(q.data.result);
+        const min = Number(q.data.min), max = Number(q.data.max);
+        expect(start).toBeGreaterThanOrEqual(min);
+        expect(start).toBeLessThanOrEqual(max);
+        expect(result).toBeGreaterThanOrEqual(min);
+        expect(result).toBeLessThanOrEqual(max);
+        expect(min).toBeGreaterThanOrEqual(0);
+        expect(max).toBeLessThanOrEqual(numberLineMax);
+      }
+    }
+  });
+
+  it("respects maxGroups in Times Tables and fractionFocus in Fractions", () => {
+    const smallTimes: PlaySettings = { ...DEFAULT_PLAY_SETTINGS, maxGroups: 5 };
+    for (let i = 0; i < 60; i++) {
+      expect(Number(makeQuestion("times", smallTimes, makeRng(i)).data.groups)).toBeLessThanOrEqual(5);
+    }
+
+    const shapesOnly: PlaySettings = { ...DEFAULT_PLAY_SETTINGS, fractionFocus: "shapes" };
+    for (let i = 0; i < 40; i++) {
+      expect(["fr.equal", "fr.shapes"]).toContain(makeQuestion("fractions", shapesOnly, makeRng(i)).skillId);
+    }
+
+    const allFractions: PlaySettings = { ...DEFAULT_PLAY_SETTINGS, fractionFocus: "all" };
+    const seen = new Set<string>();
+    for (let i = 0; i < 120; i++) seen.add(makeQuestion("fractions", allFractions, makeRng(i)).skillId);
+    expect(seen.has("fr.line")).toBe(true);
+    expect(seen.has("fr.equivalent")).toBe(true);
+  });
 });

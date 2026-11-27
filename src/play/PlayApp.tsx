@@ -11,7 +11,7 @@ import { GameIcon } from "../kit/GameIcon";
 import { SUIT_THEME } from "../kit/theme";
 import { POLISHED_ACTIVITIES } from "../scenes/registry";
 import { makeQuestion } from "./questions";
-import { DEFAULT_PLAY_SETTINGS, freshPlayData, savePlayData, type PlayData, type PlaySettings } from "./settings";
+import { DEFAULT_PLAY_SETTINGS, freshPlayData, savePlayData, type MaxNumber, type PlayData, type PlaySettings } from "./settings";
 
 const MISTAKE_LINE = "Uh oh. That's okay. Let's fix it.";
 const BLURBS: Partial<Record<ActivityId, string>> = {
@@ -207,22 +207,35 @@ function GrownupCorner({ data, onChange, onResetStars, onClose }: { data: PlayDa
   const set = (change: Partial<PlaySettings>) => onChange({ ...settings, ...change });
   const [confirmReset, setConfirmReset] = useState(false);
   const toggle = <T,>(list: T[], item: T) => list.includes(item) ? list.filter(value => value !== item) : [...list, item];
+  const rangeOptions: { value: MaxNumber; label: string }[] = [
+    { value: 10, label: "10" }, { value: 20, label: "20" }, { value: 30, label: "30" }, { value: 50, label: "50" }, { value: 100, label: "100" },
+  ];
   return <div class="modal-scrim"><section class="grownup-corner" role="dialog" aria-modal="true" aria-label="Grown-up corner">
     <header><h2>Grown-up corner</h2><button class="next-button" onClick={onClose}>Done</button></header>
 
     <h3>How hard</h3>
-    <Choice label="Numbers up to" value={settings.maxNumber} options={[{ value: 10, label: "10" }, { value: 20, label: "20" }, { value: 100, label: "100" }]} onChange={maxNumber => set({ maxNumber })} />
+    <Choice label="Numbers up to" value={settings.maxNumber} options={rangeOptions} onChange={maxNumber => set({ maxNumber, numberLineMax: undefined })} />
     <Choice label="Other games" value={settings.difficulty} options={[{ value: "easy", label: "Easy" }, { value: "medium", label: "Medium" }, { value: "hard", label: "Hard" }]} onChange={difficulty => set({ difficulty })} />
 
     <h3>Number Line</h3>
+    <Choice label="Line up to" value={settings.numberLineMax ?? settings.maxNumber} options={rangeOptions} onChange={numberLineMax => set({ numberLineMax })} />
     <Choice label="Sums" value={settings.numberLineOps} options={[{ value: "add", label: "+ only" }, { value: "sub", label: "− only" }, { value: "both", label: "+ and −" }]} onChange={numberLineOps => set({ numberLineOps })} />
     <Choice label="Most hops" value={settings.maxHops} options={[{ value: 3, label: "3" }, { value: 5, label: "5" }, { value: 10, label: "10" }]} onChange={maxHops => set({ maxHops })} />
 
     <h3>Number Bonds and Times Tables</h3>
-    <Choice label="Bonds to" value={settings.bondsTo} options={[{ value: 10, label: "10" }, { value: 20, label: "20" }]} onChange={bondsTo => set({ bondsTo })} />
+    <Choice label="Bonds to" value={settings.bondsTo} options={[{ value: 10, label: "10" }, { value: 20, label: "20" }]} onChange={bondsTo => set({ bondsTo, ...(bondsTo === 20 && settings.maxNumber < 20 ? { maxNumber: 20 } : {}) })} />
+    <Choice label="Groups up to" value={settings.maxGroups} options={[{ value: 5, label: "5" }, { value: 10, label: "10" }]} onChange={maxGroups => set({ maxGroups })} />
     <div class="corner-row"><span>Times tables</span><div class="segmented wrap" role="group" aria-label="Times tables">
       {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => <button key={table} class={settings.tables.includes(table) ? "on" : ""} aria-pressed={settings.tables.includes(table)} onClick={() => { const tables = toggle(settings.tables, table); if (tables.length) set({ tables: tables.sort((a, b) => a - b) }); }}>× {table}</button>)}
     </div></div>
+
+    <h3>Fractions</h3>
+    <Choice label="Topics" value={settings.fractionFocus} options={[
+      { value: "shapes", label: "Shapes" },
+      { value: "sharing", label: "+ Sharing" },
+      { value: "wall", label: "+ Wall" },
+      { value: "all", label: "+ Line" },
+    ]} onChange={fractionFocus => set({ fractionFocus })} />
 
     <h3>Games on the menu</h3>
     <Choice label="Show games" value={settings.showAllGames ? "all" : "ready"} options={[{ value: "ready", label: "Ready games only" }, { value: "all", label: "All 31 games" }]} onChange={value => set({ showAllGames: value === "all" })} />

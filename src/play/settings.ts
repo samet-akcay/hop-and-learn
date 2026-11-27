@@ -1,16 +1,23 @@
 import type { ActivityId, SuitId } from "../core/types";
 
-export type MaxNumber = 10 | 20 | 100;
+export type MaxNumber = 10 | 20 | 30 | 50 | 100;
 export type Difficulty = "easy" | "medium" | "hard";
+export type FractionFocus = "shapes" | "sharing" | "wall" | "all";
 
 export interface PlaySettings {
-  /** The biggest number a maths question may use (times tables and clocks excepted). */
+  /** Default upper limit for maths games. */
   maxNumber: MaxNumber;
+  /** Optional dedicated range for Number Line (falls back to maxNumber when omitted). */
+  numberLineMax?: MaxNumber;
   numberLineOps: "both" | "add" | "sub";
   /** The most hops a number-line question asks for. */
   maxHops: 3 | 5 | 10;
   bondsTo: 10 | 20;
   tables: number[];
+  /** Maximum number of groups in Times Tables. */
+  maxGroups: 5 | 10;
+  /** Which fraction concepts are included in Fractions. */
+  fractionFocus: FractionFocus;
   /** How hard the other games are. */
   difficulty: Difficulty;
   /** Show work-in-progress games that have not yet been rebuilt on the new visual kit. */
@@ -35,6 +42,8 @@ export const DEFAULT_PLAY_SETTINGS: PlaySettings = {
   maxHops: 5,
   bondsTo: 20,
   tables: [2, 5, 10],
+  maxGroups: 10,
+  fractionFocus: "sharing",
   difficulty: "easy",
   showAllGames: false,
   hiddenGames: [],
