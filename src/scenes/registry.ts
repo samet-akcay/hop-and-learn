@@ -1,8 +1,12 @@
 import type { ComponentType } from "preact";
 import type { ActivityId, GeneratedQuestion, VisualKind } from "../core/types";
 import { BondsScene } from "./BondsScene";
+import { CompareScene } from "./CompareScene";
 import { FractionScene } from "./FractionScene";
+import { MoneyScene } from "./MoneyScene";
 import { NumberLineScene } from "./NumberLineScene";
+import { PlaceValueScene } from "./PlaceValueScene";
+import { TimeScene } from "./TimeScene";
 import { TimesScene } from "./TimesScene";
 import type { SceneProps } from "./types";
 
@@ -16,6 +20,10 @@ export const POLISHED_ACTIVITIES = new Set<ActivityId>([
   "bonds",
   "times",
   "fractions",
+  "placevalue",
+  "compare",
+  "money",
+  "time",
 ]);
 
 const VISUAL_SCENES: Partial<Record<VisualKind, ComponentType<SceneProps>>> = {
@@ -23,9 +31,14 @@ const VISUAL_SCENES: Partial<Record<VisualKind, ComponentType<SceneProps>>> = {
   bonds: BondsScene,
   array: TimesScene,
   fraction: FractionScene,
+  placevalue: PlaceValueScene,
+  balance: CompareScene,
+  coins: MoneyScene,
+  clock: TimeScene,
 };
 
 /** Resolve a rebuilt scene component for a question, or undefined to use the legacy renderer. */
 export function resolveScene(question: GeneratedQuestion): ComponentType<SceneProps> | undefined {
+  if (question.activityId === "time") return TimeScene;
   return VISUAL_SCENES[question.visual];
 }

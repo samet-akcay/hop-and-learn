@@ -42,55 +42,11 @@ export function QuestionScene({ question, suit, level, onWorkComplete, onActivit
   }
 
   return <div class="scene-wrap">
-    {question.visual === "placevalue" && <PlaceValueScene question={question} />}
-    {question.visual === "balance" && <BalanceScene question={question} />}
-    {question.visual === "clock" && <ClockScene question={question} />}
     {question.visual === "rover" && (question.activityId === "turns" ? <TurnScene question={question} /> : <RoverScene question={question} />)}
     {question.visual === "sentence" && <SentenceScene question={question} />}
     {question.visual === "chart" && <ChartScene question={question} />}
-    {question.visual === "coins" && <CoinScene question={question} />}
     {question.visual === "shape" && <ShapeScene question={question} />}
     {question.visual === "picture" && <PictureScene question={question} onPlayPhoneme={onPlayPhoneme} hasPhoneme={hasPhoneme} />}
-  </div>;
-}
-
-function PlaceValueScene({ question }: { question: GeneratedQuestion }) {
-  const tens = num(question, "tens"), ones = num(question, "ones");
-  return <div class="place-scene">
-    <div class="scene-caption"><span class="scene-chip">Tens and ones</span></div>
-    <div class="place-columns">
-      <div class="place-column"><b>{tens} {tens === 1 ? "ten" : "tens"}</b><div class="tens-rods">{Array.from({ length: tens }, (_, i) => <span class="ten-rod" key={i}><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></span>)}</div></div>
-      <div class="place-column"><b>{ones} {ones === 1 ? "one" : "ones"}</b><div class="ones-blocks">{Array.from({ length: ones }, (_, i) => <span class="one-block" key={i} />)}</div></div>
-    </div>
-  </div>;
-}
-
-function BalanceScene({ question }: { question: GeneratedQuestion }) {
-  const a = num(question, "a"), b = num(question, "b");
-  return <div class="balance-scene">
-    <div class="scene-caption"><span class="scene-chip">Compare</span>{a >= 10 && b >= 10 && <span>Look at the tens first</span>}</div>
-    <div class="balance-beam"><span class="balance-pan">{a}</span><span class="balance-pivot">⚖</span><span class="balance-pan">{b}</span></div>
-  </div>;
-}
-
-function ClockScene({ question }: { question: GeneratedQuestion }) {
-  const hour = num(question, "hour", 3), minutes = num(question, "minutes", 0);
-  const minuteAngle = minutes * 6;
-  const hourAngle = (hour % 12) * 30 + minutes * 0.5;
-  return <div class="clock-scene">
-    <div class="scene-caption"><span class="scene-chip">Launch clock</span><span>Long hand: minutes · short hand: hour</span></div>
-    <svg viewBox="0 0 200 200" role="img" aria-label={`Clock showing ${hour}:${String(minutes).padStart(2, "0")}`}>
-      <circle cx="100" cy="100" r="86" fill="#fff" stroke="#a9bfcb" stroke-width="5" />
-      {Array.from({ length: 12 }, (_, i) => {
-        const angle = (i * 30 - 90) * Math.PI / 180;
-        const tx = 100 + Math.cos(angle) * 66;
-        const ty = 100 + Math.sin(angle) * 66;
-        return <text x={tx} y={ty + 7} text-anchor="middle" class="clock-number" key={i}>{i === 0 ? 12 : i}</text>;
-      })}
-      <line x1="100" y1="100" x2="100" y2="54" stroke="#315971" stroke-width="8" stroke-linecap="round" transform={`rotate(${hourAngle} 100 100)`} />
-      <line x1="100" y1="100" x2="100" y2="33" stroke="#e2b850" stroke-width="5" stroke-linecap="round" transform={`rotate(${minuteAngle} 100 100)`} />
-      <circle cx="100" cy="100" r="6" fill="#315971" />
-    </svg>
   </div>;
 }
 
@@ -157,11 +113,6 @@ function ChartScene({ question }: { question: GeneratedQuestion }) {
     <div class="scene-caption"><span class="scene-chip">Cargo count</span><span>Which has the most?</span></div>
     <div class="chart-bars">{names.map((name, i) => <div class="chart-bar-col" key={name}><span class="chart-value">{counts[i]}</span><div class="chart-bar" style={{ height: `${Math.max(12, counts[i]! / max * 105)}px` }} /><b>{name}</b></div>)}</div>
   </div>;
-}
-
-function CoinScene({ question }: { question: GeneratedQuestion }) {
-  const a = num(question, "a"), b = num(question, "b");
-  return <div class="coin-scene"><div class="scene-caption"><span class="scene-chip">UK coins</span><span>Add the values</span></div><div class="coin-row"><span class="coin">{a}p</span>{b > 0 && <><span class="coin-plus">+</span><span class="coin">{b}p</span><span class="coin-equals">= ?</span></>}</div></div>;
 }
 
 function ShapeScene({ question }: { question: GeneratedQuestion }) {

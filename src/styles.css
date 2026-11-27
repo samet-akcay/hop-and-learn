@@ -186,9 +186,19 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .kit-svg { display: block; margin: 6px auto 4px; overflow: visible; }
 .bonds-svg { width: min(100%, 620px); height: auto; }
 .times-svg { width: min(100%, 720px); height: auto; }
+.placevalue-svg { width: min(100%, 640px); height: auto; }
+.compare-svg { width: min(100%, 560px); height: auto; }
+.money-svg { width: min(100%, 560px); height: auto; }
+.clock-svg { width: min(100%, 270px); height: auto; }
 .kit-interactive { cursor: pointer; transition: opacity .12s ease; }
 .kit-interactive:hover { opacity: .88; }
 .kit-bar-label { font-size: 18px; font-weight: 850; }
+.kit-col-head { font-size: 13px; font-weight: 850; letter-spacing: .09em; }
+.kit-col-sub { font-size: 12px; font-weight: 700; }
+.kit-muted-label { fill: #7f98a4; font-size: 15px; font-weight: 700; }
+.kit-pan-value { font-size: 24px; font-weight: 900; }
+.kit-pivot-sign { font-size: 24px; font-weight: 900; }
+.clock-min-hint { fill: #536f7c; font-size: 11px; font-weight: 800; }
 .kit-pod-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .kit-pod-count { font-size: 13px; font-weight: 900; }
 .fraction-svg { display: block; margin: 6px auto 4px; overflow: visible; }
@@ -225,7 +235,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .dot-group { min-width: 115px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 11px; background: #102538; }.dot-group.group-shown { border-color: #6091a8; background: #16344a; }.group-index { display: block; margin-bottom: 6px; color: var(--faint); font-size: 9px; text-transform: uppercase; letter-spacing: .12em; }.dots { display: flex; flex-wrap: wrap; gap: 5px; }.dot { width: 13px; height: 13px; border: 1px solid #546a78; border-radius: 50%; background: #243d4c; }.dot-filled { border-color: #8bc5e1; background: #8bc5e1; }
 .place-columns { display: flex; justify-content: center; gap: 40px; padding: 12px; }.place-column { min-width: 140px; text-align: center; }.place-column b { color: var(--ink-strong); font-size: 14px; }.tens-rods, .ones-blocks { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; max-width: 250px; min-height: 48px; margin: 12px auto 0; }.ten-rod { display: flex; flex-direction: column; gap: 1px; width: 12px; border: 1px solid #6b9a76; background: rgba(110,161,124,.2); }.ten-rod i { height: 4px; border-bottom: 1px solid #76a985; }.one-block { width: 15px; height: 15px; border-radius: 2px; border: 1px solid #dfb75b; background: rgba(221,180,85,.66); }
 .balance-beam { display: flex; align-items: center; justify-content: center; gap: 38px; padding: 27px; }.balance-pan { display: grid; place-items: center; width: 106px; height: 64px; border: 2px solid #57819a; border-radius: 12px 12px 30px 30px; color: var(--ink-strong); background: rgba(72,119,143,.2); font-size: 28px; font-weight: 900; }.balance-pivot { color: var(--gold); font-size: 40px; }
-.clock-scene svg { display: block; height: 170px; margin: 0 auto; }.clock-number { fill: #274656; font-size: 15px; font-weight: 850; }
+.clock-scene .clock-svg { display: block; width: min(100%, 250px); height: auto; margin: 0 auto; }.clock-number { fill: #274656; font-size: 16px; font-weight: 850; }
 .fraction-counters { display: flex; justify-content: center; flex-wrap: wrap; gap: 7px; padding: 12px; }.counter-dot { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #64966f; border-radius: 50%; color: #b9ddba; background: rgba(115,163,123,.2); }.fraction-answer-visual { display: flex; justify-content: center; gap: 15px; color: var(--muted); font-size: 13px; }.fraction-answer-visual span { color: var(--gold); }
 .rover-grid { display: grid; gap: 5px; width: min(100%, 285px); margin: 8px auto 0; }.rover-cell { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid #39576a; border-radius: 8px; color: var(--ink-strong); background: #122d42; font-size: 22px; }.rover-start { border-color: #77b18a; color: var(--mint); }.rover-goal { border-color: var(--gold); color: var(--gold); background: rgba(231,189,97,.12); }
 .sentence-slots { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin: 10px auto; }.sentence-slot { display: grid; gap: 5px; min-height: 58px; align-content: center; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.05); text-align: center; }.sentence-slot small { color: var(--faint); font-size: 9px; letter-spacing: .12em; }.sentence-slot b { font-size: 13px; color: var(--ink-strong); }.slot-0 { border-bottom: 3px solid var(--sentence-who); }.slot-1 { border-bottom: 3px solid var(--sentence-doing); }.slot-2 { border-bottom: 3px solid var(--sentence-what); }.slot-3 { border-bottom: 3px solid var(--sentence-where); }.slot-4 { border-bottom: 3px solid #b9a3d5; }

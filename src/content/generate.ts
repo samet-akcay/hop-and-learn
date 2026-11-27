@@ -406,11 +406,20 @@ const builders: Record<ActivityId, Builder> = {
       });
     }
     if (skill === "mn.make") {
-      const target = rng.pick([15, 25, 30, 40, 60, 75]);
-      const correct = `${Math.floor(target / 10) * 10}p + ${target % 10}p`;
-      const choices = uniqueChoices(correct, [`${target}p`, `${Math.max(1, target - 5)}p + 5p`, `${target - 10}p + 10p`], rng);
-      return make("money", skill, 2, `make-${target}`, `Which coins make ${target}p?`, correct, `${correct} makes ${target}p.`, "coins", { a: Math.floor(target / 10) * 10, b: target % 10, total: target }, {
-        answerKind: "choice", choices, hint1: "Let's look for coin values that make the total.", hint2: `Let's start with ${Math.floor(target / 10) * 10}p.`,
+      const row = rng.pick([
+        { target: 7, a: 5, b: 2, distractors: ["5p + 1p", "2p + 2p", "10p + 2p"] },
+        { target: 12, a: 10, b: 2, distractors: ["10p + 1p", "5p + 5p", "10p + 5p"] },
+        { target: 15, a: 10, b: 5, distractors: ["10p + 2p", "5p + 5p", "20p + 5p"] },
+        { target: 25, a: 20, b: 5, distractors: ["20p + 2p", "10p + 5p", "20p + 10p"] },
+        { target: 30, a: 20, b: 10, distractors: ["20p + 5p", "10p + 10p", "50p + 10p"] },
+        { target: 40, a: 20, b: 20, distractors: ["20p + 10p", "50p + 10p", "10p + 10p"] },
+        { target: 60, a: 50, b: 10, distractors: ["50p + 5p", "20p + 20p", "50p + 20p"] },
+        { target: 70, a: 50, b: 20, distractors: ["50p + 10p", "20p + 20p", "50p + 5p"] },
+      ] as const);
+      const correct = `${row.a}p + ${row.b}p`;
+      const choices = uniqueChoices(correct, [...row.distractors], rng);
+      return make("money", skill, 2, `make-${row.target}`, `Which coins make ${row.target}p?`, correct, `${correct} makes ${row.target}p.`, "coins", { a: row.a, b: row.b, total: row.target }, {
+        answerKind: "choice", choices, hint1: "Let's look for coin values that make the total.", hint2: `Let's start with ${row.a}p.`,
       });
     }
     if (skill === "mn.change") {

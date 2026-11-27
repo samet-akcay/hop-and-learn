@@ -17,12 +17,12 @@ Every game is built on the shared visual foundation (`src/kit/` + `src/scenes/`)
 
 ---
 
-## Phase 2 — Everyday Year 2 Maths (Tactile Visuals)
+## Phase 2 — Everyday Year 2 Maths (Tactile Visuals) *(Done)*
 High-value Year 2 skills that shine with crisp interactive SVG diagrams:
-- [ ] **Place Value** (`PlaceValueScene.tsx`) — SVG base-10 tens rods and ones cubes (tap/build tens and ones, flexible partitioning like `47 = 30 + 17`, 10 more/less highlight)
-- [ ] **Compare** (`CompareScene.tsx`) — real SVG balance beam that physically tilts toward the heavier pan, backed by mini base-10 blocks so he can *see* why `34 > 29`
-- [ ] **Money** (`MoneyScene.tsx`) — illustrated UK coins (copper 1p/2p, silver 5p/10p, heptagonal silver 20p/50p, gold £1), interactive counting tray and change counter
-- [ ] **Time** (`TimeScene.tsx`) — upgraded SVG analogue clock with shaded quarter/half sectors, colour-coded minute/hour hands, and 5-minute step markers
+- [x] **Place Value** (`PlaceValueScene.tsx`) — SVG base-10 tens rods and ones cubes (tap/build tens and ones, flexible partitioning like `47 = 30 + 17`, 10 more/less highlight)
+- [x] **Compare** (`CompareScene.tsx`) — real SVG balance beam that physically tilts toward the heavier pan, backed by mini base-10 blocks so he can *see* why `34 > 29`
+- [x] **Money** (`MoneyScene.tsx`) — illustrated UK coins (copper 1p/2p, silver 5p/10p, heptagonal silver 20p/50p, gold £1), interactive counting tray and change counter
+- [x] **Time** (`TimeScene.tsx`) — upgraded SVG analogue clock with shaded quarter/half sectors, colour-coded minute/hour hands, and 5-minute step markers
 
 ---
 

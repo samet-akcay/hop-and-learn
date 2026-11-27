@@ -25,17 +25,18 @@ async function hopToTheEnd(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("Hop & Learn", () => {
-  it("shows the four ready games by default, and reveals all games when enabled in settings", () => {
+  it("shows the ready games by default, and reveals all games when enabled in settings", () => {
     render(<PlayApp initialData={quietData()} />);
     const cards = [...document.querySelectorAll(".my-games .game-card b")].map(item => item.textContent);
     expect(cards).toEqual(["Number Line", "Number Bonds", "Times Tables", "Fractions"]);
-    expect(screen.queryByRole("button", { name: "Money", exact: true })).toBeNull();
+    expect(screen.getByRole("button", { name: "Money", exact: true })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Time", exact: true })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Sentence Builder", exact: true })).toBeNull();
     cleanup();
 
     const allData = quietData();
     allData.settings.showAllGames = true;
     render(<PlayApp initialData={allData} />);
-    expect(screen.getByRole("button", { name: "Money", exact: true })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Sentence Builder", exact: true })).toBeTruthy();
   });
 
