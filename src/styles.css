@@ -186,6 +186,16 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .kit-svg { display: block; margin: 6px auto 4px; overflow: visible; }
 .bonds-svg { width: min(100%, 620px); height: auto; }
 .times-svg { width: min(100%, 720px); height: auto; }
+.rover-svg { width: min(100%, 330px); height: auto; }
+.turns-svg { width: min(100%, 290px); height: auto; }
+.position-svg { width: min(100%, 240px); height: auto; }
+.shape-2d-svg, .shape-3d-svg { width: min(100%, 250px); height: auto; }
+.shape-svg { width: min(100%, 320px); height: auto; }
+.shape-sort-svg { width: min(100%, 420px); height: auto; }
+.shape-pattern-svg { width: min(100%, 460px); height: auto; }
+.measure-dial-svg, .measure-jug-svg, .measure-temp-svg { width: min(100%, 240px); height: auto; }
+.spotbug-svg, .spotbug-proof-svg { width: min(100%, 560px); height: auto; }
+.turn-pointer { transition: transform .35s cubic-bezier(.2,1.3,.4,1); }
 .placevalue-svg { width: min(100%, 640px); height: auto; }
 .compare-svg { width: min(100%, 560px); height: auto; }
 .money-svg { width: min(100%, 560px); height: auto; }

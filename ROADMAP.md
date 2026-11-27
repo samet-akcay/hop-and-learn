@@ -26,13 +26,13 @@ High-value Year 2 skills that shine with crisp interactive SVG diagrams:
 
 ---
 
-## Phase 3 — Visual Reasoning & Computing
+## Phase 3 — Visual Reasoning & Computing *(Done)*
 Interactive grid, measurement, and spatial games:
-- [ ] **Program the Rover** (`RoverScene.tsx`) — animated SVG mission grid where the chosen hero/Bit actually drives step-by-step along the programmed arrows to collect a crystal, with obstacle/bug highlights
-- [ ] **Turns** (`TurnsScene.tsx`) — clean light-mode compass dial with animated quarter/half turn arc and hero facing direction
-- [ ] **Shapes** (`ShapesScene.tsx`) — crisp 2D shapes with tappable side/vertex counters, real isometric 3D SVGs (cube, cylinder, triangular prism, sphere, cone), and a visual symmetry mirror fold
-- [ ] **Measure** (`MeasureScene.tsx`) — SVG ruler (cm), dial weighing scale (g/kg), liquid measuring jug (ml/l), and thermometer (°C) — unlocking the 3 skills currently hidden in `LEFT_OUT`
-- [ ] **Spot the Bug** (`SpotBugScene.tsx`) — hero speech bubble showing their attempted sum + a visual "check" diagram proving whether it is right or a bug
+- [x] **Program the Rover** (`RoverScene.tsx`) — animated SVG mission grid where the chosen hero/Bit actually drives step-by-step along the programmed arrows to collect a crystal, with obstacle/bug highlights
+- [x] **Turns** (`TurnsScene.tsx`) — clean light-mode compass dial with animated quarter/half turn arc and hero facing direction
+- [x] **Shapes** (`ShapesScene.tsx`) — crisp 2D shapes with tappable side/vertex counters, real isometric 3D SVGs (cube, cylinder, triangular prism, sphere, cone), and a visual symmetry mirror fold
+- [x] **Measure** (`MeasureScene.tsx`) — SVG ruler (cm), dial weighing scale (g/kg), liquid measuring jug (ml/l), and thermometer (°C) — unlocking the 3 skills previously hidden in `LEFT_OUT`
+- [x] **Spot the Bug** (`SpotBugScene.tsx`) — hero speech bubble showing their attempted sum + a visual "check" diagram proving whether it is right or a bug
 
 ---
 

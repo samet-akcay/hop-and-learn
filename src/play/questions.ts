@@ -17,11 +17,8 @@ function biggestNumber(question: GeneratedQuestion): number {
 }
 
 /** Easy uses the first third of a game's skills, medium two thirds, hard all of them (stretch skills excluded). */
-/** Skills left out of the simple game because their pictures can't show them clearly yet. */
-const LEFT_OUT = new Set(["ms.scales", "ms.jugs", "ms.temp"]);
-
 export function skillPool(activityId: ActivityId, difficulty: PlaySettings["difficulty"]): string[] {
-  const all = (SKILLS_BY_ACTIVITY.get(activityId) ?? []).filter(skill => !LEFT_OUT.has(skill.id));
+  const all = SKILLS_BY_ACTIVITY.get(activityId) ?? [];
   const core = all.filter(skill => !skill.stretch && !skill.nlaStage);
   const skills = (core.length ? core : all).map(skill => skill.id);
   const share = difficulty === "easy" ? 1 / 3 : difficulty === "medium" ? 2 / 3 : 1;
