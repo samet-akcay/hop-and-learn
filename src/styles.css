@@ -173,7 +173,21 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .numberline-svg { width: 100%; max-height: 180px; overflow: visible; }
 .svg-label { fill: #a9c0cb; font-size: 18px; font-weight: 750; }.numberline-svg .svg-label { fill: #435d69; }.child-shell .svg-label { fill: #435d69; }.svg-small { fill: var(--gold); font-size: 12px; font-weight: 800; }
 .captain-hop { transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 4px 3px rgba(0,0,0,.25)); }.captain-hop.hop-robot circle:last-of-type { stroke: #8bc5e1; }.captain-hop.hop-monster circle:last-of-type { stroke: #b5c58b; }.hop-arc { fill: none; stroke-width: 4; stroke-dasharray: 7 7; stroke-linecap: round; animation: hop-trail .62s linear; opacity: .85; }.hop-arc-plus { stroke: var(--mint); }.hop-arc-minus { stroke: var(--gold); }@keyframes hop-trail { from { stroke-dashoffset: 105; opacity: .2; } to { stroke-dashoffset: 0; opacity: .85; } }
-.fraction-groups { display: flex; justify-content: center; flex-wrap: wrap; gap: 11px; margin: 12px auto; }.fraction-group { display: flex; gap: 4px; padding: 7px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.025); }.fraction-group .counter-dot { width: 21px; height: 21px; }
+.fraction-svg { display: block; margin: 6px auto 4px; overflow: visible; }
+.fraction-bar-svg { width: min(100%, 480px); height: auto; }
+.fraction-circle-svg, .fraction-square-svg { width: min(100%, 240px); height: auto; }
+.fraction-wall-svg { width: min(100%, 560px); height: auto; }
+.fraction-sets-svg { width: min(100%, 660px); height: auto; }
+.fraction-line-svg { width: min(100%, 660px); height: auto; }
+.fraction-part-group { cursor: pointer; transition: opacity .12s ease; }
+.fraction-part-group:hover { opacity: .88; }
+.fraction-part-num { fill: #1d3946; font-size: 16px; font-weight: 850; pointer-events: none; }
+.fraction-highlight-tag { fill: #4a3102; font-size: 12px; font-weight: 850; letter-spacing: .02em; }
+.fraction-tray-done { fill: #2f6c47; font-size: 16px; font-weight: 800; }
+.fraction-group-count { fill: #2c4a58; font-size: 15px; font-weight: 900; }
+.fraction-line-unknown { fill: #9b6d0d; font-size: 28px; font-weight: 900; }
+.fraction-solved-note { margin: 8px auto 2px; color: var(--muted); font-size: 14px; font-weight: 650; text-align: center; }
+.fraction-solved-note b { color: var(--ink-strong); font-weight: 850; }
 .turn-diagram { display: block; width: 220px; max-height: 150px; margin: 2px auto; }.sentence-to-fix { margin: 15px 0 20px; color: var(--ink-strong); font-size: 20px; font-weight: 750; text-align: center; }.shape-options { display: flex; justify-content: center; align-items: center; gap: 28px; min-height: 120px; color: #b6d9c0; font-size: 54px; }
 .story-tiles { display: flex; justify-content: center; flex-wrap: wrap; gap: 9px; margin: 12px auto; }.story-tile { display: grid; gap: 6px; max-width: 210px; min-height: 66px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.04); }.story-tile small { color: var(--faint); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }.story-tile b { color: var(--ink-strong); font-size: 12px; }.bug-sum { margin: 20px 0; color: var(--ink-strong); font-size: 32px; font-weight: 900; text-align: center; }.machine-flow { display: flex; justify-content: center; align-items: center; gap: 25px; margin: 18px; }.machine-flow span { display: grid; place-items: center; width: 54px; height: 54px; border: 1px solid #5e8698; border-radius: 12px; color: var(--ink-strong); background: #19394c; font-size: 23px; font-weight: 850; }.machine-flow b { color: var(--gold); font-size: 25px; }
 .binary-lights { display: flex; justify-content: center; gap: 16px; margin: 14px; }.binary-lamp { display: grid; place-items: center; gap: 5px; width: 55px; height: 68px; border: 1px solid var(--line); border-radius: 12px; color: #6c8491; background: #102437; }.binary-lamp span { font-size: 26px; }.binary-lamp small { font-size: 11px; }.binary-lamp.lamp-on { color: #e7bd61; border-color: #ad8950; background: rgba(231,189,97,.1); }

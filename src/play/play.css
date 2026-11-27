@@ -53,6 +53,9 @@
 .big-choice:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 #c3d3d6; }
 .big-choice small { margin-left: 2px; font-size: .55em; }
 .big-choice.wordy { min-height: 76px; font-size: 26px; }
+.big-choice.fraction-choice { display: inline-flex; align-items: center; justify-content: center; min-height: 108px; padding: 10px 26px; }
+.stacked-fraction { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; font-size: 32px; font-weight: 850; }
+.stacked-fraction i { display: block; width: 34px; height: 4px; margin: 4px 0; border-radius: 99px; background: currentColor; }
 .big-choice:disabled { opacity: .3; cursor: default; box-shadow: none; }
 .play-answer { width: min(100%, 760px); margin: 0 auto; }
 .play-success { display: flex; flex-direction: column; align-items: center; gap: 4px; }

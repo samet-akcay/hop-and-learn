@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { GeneratedQuestion, Level, SuitId } from "../core/types";
 import { hopPose, type HopPose } from "./hop";
 import { HERO_NAMES, HeroCharacter } from "./HeroCharacter";
+import { FractionScene } from "./FractionScene";
 
 interface Props {
   question: GeneratedQuestion;
@@ -76,7 +77,7 @@ export function QuestionScene({ question, suit, level, onWorkComplete, onActivit
     {question.visual === "placevalue" && <PlaceValueScene question={question} />}
     {question.visual === "balance" && <BalanceScene question={question} />}
     {question.visual === "clock" && <ClockScene question={question} />}
-    {question.visual === "fraction" && <FractionScene question={question} />}
+    {question.visual === "fraction" && <FractionScene question={question} suit={suit} solved={solved} reducedMotion={reducedMotion} onActivity={onActivity} onStep={onStep} onWorkComplete={onWorkComplete} />}
     {question.visual === "rover" && (question.activityId === "turns" ? <TurnScene question={question} /> : <RoverScene question={question} />)}
     {question.visual === "sentence" && <SentenceScene question={question} />}
     {question.visual === "chart" && <ChartScene question={question} />}
@@ -231,21 +232,6 @@ function ClockScene({ question }: { question: GeneratedQuestion }) {
       <line x1="100" y1="100" x2="100" y2="33" stroke="#e2b850" stroke-width="5" stroke-linecap="round" transform={`rotate(${minuteAngle} 100 100)`} />
       <circle cx="100" cy="100" r="6" fill="#315971" />
     </svg>
-  </div>;
-}
-
-function FractionScene({ question }: { question: GeneratedQuestion }) {
-  const denominator = num(question, "denominator", 2), whole = num(question, "whole", 8);
-  const numerator = num(question, "numerator", 1);
-  if (["fr.shapes", "fr.equivalent", "fr.line"].includes(question.skillId)) return <div class="fraction-scene">
-    <div class="scene-caption"><span class="scene-chip">Equal parts</span><span>{denominator} equal parts make one whole</span></div>
-    <div class="fraction-bar">{Array.from({ length: denominator }, (_, index) => <span class={index < numerator ? "fraction-shaded" : ""} key={index}>{index < numerator ? "●" : ""}</span>)}</div>
-  </div>;
-  if (question.skillId === "fr.equal") return <div class="fraction-scene"><div class="scene-caption"><span class="scene-chip">Compare the parts</span></div><div class="fraction-bar unequal-bar"><span /><span /><span /><span /></div></div>;
-  return <div class="fraction-scene">
-    <div class="scene-caption"><span class="scene-chip">Share equally</span><span>{whole} counters · {denominator} equal groups</span></div>
-    <div class="fraction-groups">{Array.from({ length: denominator }, (_, group) => <div class="fraction-group" key={group}>{Array.from({ length: Math.ceil(whole / denominator) }, (_, i) => <span class="counter-dot" key={i} />)}</div>)}</div>
-    <div class="fraction-answer-visual">Let's count how many are in one group.</div>
   </div>;
 }
 

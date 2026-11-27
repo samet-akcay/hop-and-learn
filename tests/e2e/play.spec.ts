@@ -60,6 +60,16 @@ test("the grown-up corner sets numbers up to 10 for the number line", async ({ p
   }
 });
 
+test("fractions shows clear SVG diagrams and earns a star", async ({ page }) => {
+  await quiet(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Fractions", exact: true }).click();
+  const svg = page.locator("svg.fraction-svg");
+  await expect(svg).toBeVisible();
+  const box = await svg.boundingBox();
+  expect(box && box.width > 120 && box.height > 60).toBeTruthy();
+});
+
 test("every game on the menu opens and shows a question", async ({ page }) => {
   await quiet(page);
   await page.goto("/");

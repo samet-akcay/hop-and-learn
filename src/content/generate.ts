@@ -48,6 +48,26 @@ function timeLabel(hour: number, minutes: number): string {
     : `${numberName(60 - minutes)} to ${hour === 12 ? 1 : hour + 1}`;
 }
 
+function fractionName(numerator: number, denominator: number): string {
+  if (denominator === 2) return numerator === 1 ? "one half" : `${numberName(numerator)} halves`;
+  if (denominator === 3) return `${numberName(numerator)} third${numerator === 1 ? "" : "s"}`;
+  if (denominator === 4) return `${numberName(numerator)} quarter${numerator === 1 ? "" : "s"}`;
+  if (denominator === 6) return `${numberName(numerator)} sixth${numerator === 1 ? "" : "s"}`;
+  if (denominator === 8) return `${numberName(numerator)} eighth${numerator === 1 ? "" : "s"}`;
+  return `${numerator}/${denominator}`;
+}
+
+const YEAR2_FRACTIONS: readonly (readonly [number, number])[] = [
+  [1, 2], [1, 3], [2, 3], [1, 4], [2, 4], [3, 4],
+];
+
+/** Year 2 fraction distractors that never equal the target fraction (e.g. never offer 1/2 as wrong for 2/4). */
+function fractionDistractors(numerator: number, denominator: number): string[] {
+  return YEAR2_FRACTIONS
+    .filter(([n, d]) => n * denominator !== numerator * d)
+    .map(([n, d]) => `${n}/${d}`);
+}
+
 function uniqueChoices(correct: string, candidates: string[], rng: Rng): string[] {
   const seen = new Set([correct]);
   const distractors = candidates.filter(item => item !== correct && !seen.has(item));
@@ -431,36 +451,86 @@ const builders: Record<ActivityId, Builder> = {
       answerKind: "choice", choices: answerOptions, hint1: "Let's look at the long minute hand.", hint2: minutes === 45 ? "The minute hand is near the 12. We say quarter to." : "Each number is five minutes.",
     });
   },
-  fractions: (_level, rng, options = {}) => {
+  fractions: (level, rng, options = {}) => {
     const skill = options.skillId ?? "fr.sets";
     if (skill === "fr.equal") {
       const equal = rng.int(0, 1) === 1;
-      return make("fractions", skill, 2, `equal-parts-${equal}`, "Are these parts equal?", equal ? "Yes" : "No", equal ? "The parts are equal." : "The parts are not equal.", "fraction", { denominator: 4, whole: 8, part: equal ? 2 : 3, unequal: !equal }, {
-        answerKind: "choice", choices: ["Yes", "No"], hint1: "Let's compare the size of each part.", hint2: "Equal parts are the same size.",
-      });
+      const shape = rng.pick(["bar", "circle", "square"] as const);
+      const parts = rng.pick([2, 3, 4] as const);
+      return make("fractions", skill, level, `equal-parts-${shape}-${parts}-${equal ? "eq" : "uneq"}`,
+        "Are these parts equal?", equal ? "Yes" : "No",
+        equal ? `Yes. The whole is split into ${parts} equal parts.` : `No. The ${parts} parts are not the same size.`,
+        "fraction", { shape, denominator: parts, parts, equal, unequal: !equal }, {
+          spoken: "Look at the shape. Are all the parts equal?",
+          instruction: "Equal parts are the exact same size.",
+          answerKind: "choice", choices: ["Yes", "No"],
+          hint1: "Let's compare the size of each part.", hint2: "Equal parts are the exact same size.",
+        });
     }
     if (skill === "fr.equivalent") {
       const same = rng.int(0, 1) === 1;
-      return make("fractions", skill, 2, `equivalent-${same}`, `Is 2/4 the same as ${same ? "1/2" : "1/3"}?`, same ? "Yes" : "No", same ? "2/4 is equal to 1/2." : "2/4 is not equal to 1/3.", "fraction", { denominator: 4, whole: 4, part: 2 }, {
-        answerKind: "choice", choices: ["Yes", "No"], hint1: "Let's split the whole into equal parts.", hint2: "Two quarters cover the same space as one half.",
-      });
+      const coreSame: readonly (readonly [number, number, number, number])[] = [
+        [2, 4, 1, 2], [1, 2, 2, 4], [2, 6, 1, 3], [3, 6, 1, 2],
+      ];
+      const stretchSame: readonly (readonly [number, number, number, number])[] = [
+        ...coreSame, [4, 6, 2, 3], [2, 8, 1, 4],
+      ];
+      const notSame: readonly (readonly [number, number, number, number])[] = [
+        [2, 4, 1, 3], [1, 2, 1, 3], [1, 2, 1, 4], [3, 4, 1, 2], [2, 3, 1, 2], [1, 3, 1, 4],
+      ];
+      const [n1, d1, n2, d2] = rng.pick(same ? (level >= 3 ? stretchSame : coreSame) : notSame);
+      const name1 = fractionName(n1, d1);
+      const name2 = fractionName(n2, d2);
+      const cap1 = `${name1[0]!.toUpperCase()}${name1.slice(1)}`;
+      return make("fractions", skill, level, `equivalent-${n1}-${d1}-vs-${n2}-${d2}`,
+        `Is ${n1}/${d1} the same as ${n2}/${d2}?`, same ? "Yes" : "No",
+        same ? `${cap1} is equal to ${name2}.` : `${cap1} is not equal to ${name2}.`,
+        "fraction", { numerator: n1, denominator: d1, numerator2: n2, denominator2: d2, same, whole: d1, part: n1 }, {
+          spoken: `Is ${name1} the same as ${name2}?`,
+          instruction: "Look where the shaded parts end on both bars.",
+          answerKind: "choice", choices: ["Yes", "No"],
+          hint1: "Let's follow the dotted line between the two bars.",
+          hint2: "Equivalent fractions cover the exact same length of the whole bar.",
+        });
     }
     if (skill === "fr.shapes" || skill === "fr.line") {
-      const denominator = rng.pick([2, 3, 4]), numerator = rng.int(1, denominator - 1);
+      const [numerator, denominator] = rng.pick(YEAR2_FRACTIONS);
       const fraction = `${numerator}/${denominator}`;
-      const name = denominator === 2 ? (numerator === 1 ? "one half" : "two halves") : denominator === 3 ? `${numberName(numerator)} third${numerator > 1 ? "s" : ""}` : `${numberName(numerator)} quarter${numerator > 1 ? "s" : ""}`;
-      return make("fractions", skill, 2, `fraction-${fraction}`, skill === "fr.line" ? `What fraction is at this point?` : `What fraction of the shape is shaded?`, fraction, `${name} is shaded.`, "fraction", { denominator, whole: denominator, part: numerator, numerator, fraction }, {
-        answerKind: "choice", choices: uniqueChoices(fraction, [`${numerator}/${denominator + 1}`, `${Math.max(1, numerator - 1)}/${denominator}`, `1/${denominator}`, `${numerator + 1}/${denominator + 1}`, `${numerator}/${denominator + 2}`], rng),
-        hint1: "Let's count the equal parts.", hint2: `There are ${denominator} equal parts in the whole.`,
-      });
+      const name = fractionName(numerator, denominator);
+      const shape = denominator === 3 ? rng.pick(["circle", "bar"] as const) : rng.pick(["circle", "bar", "grid"] as const);
+      const isLine = skill === "fr.line";
+      return make("fractions", skill, level,
+        isLine ? `fraction-line-${numerator}-${denominator}` : `fraction-shape-${shape}-${numerator}-${denominator}`,
+        isLine ? "What fraction is at this point?" : "What fraction of the shape is shaded?",
+        fraction,
+        isLine
+          ? `From 0 to 1 has ${denominator} equal jumps. ${numerator} ${numerator === 1 ? "jump" : "jumps"} is ${name}.`
+          : `The whole is split into ${denominator} equal parts. ${numerator} ${numerator === 1 ? "part is" : "parts are"} shaded. That is ${name}.`,
+        "fraction", { shape, denominator, numerator, whole: denominator, part: numerator, fraction }, {
+          spoken: isLine ? "What fraction is at this point?" : "What fraction of the shape is shaded?",
+          instruction: isLine ? "Count the equal jumps from 0 to 1." : "Count the shaded parts, then count all the equal parts.",
+          answerKind: "choice", choices: uniqueChoices(fraction, fractionDistractors(numerator, denominator), rng),
+          hint1: isLine ? "Let's count the equal jumps from 0 to 1." : "Let's count how many equal parts make the whole.",
+          hint2: `There are ${denominator} equal parts in the whole.`,
+        });
     }
-    const denominator = rng.pick([2, 3, 4]);
-    const whole = denominator * rng.int(2, 8);
-    const part = whole / denominator;
-    const label = denominator === 2 ? "half" : denominator === 3 ? "one third" : "one quarter";
-    return make("fractions", skill, 2, `${label}-of-${whole}`, `What is ${label} of ${whole}?`, String(part), `${label[0]!.toUpperCase()}${label.slice(1)} of ${whole} is ${part}.`, "fraction", { denominator, whole, part }, {
-      hint1: `Let's share ${whole} into ${denominator} equal groups.`, hint2: `Let's count ${whole} counters into ${denominator} groups.`, strategy: "We shared equally.",
-    });
+    const denominator = rng.pick([2, 3, 4] as const);
+    const perGroup = rng.int(2, denominator === 2 ? 6 : 5);
+    const whole = denominator * perGroup;
+    const numerator = level >= 3 ? rng.pick(denominator === 4 ? [1, 3] : denominator === 3 ? [1, 2] : [1]) : 1;
+    const answerValue = numerator * perGroup;
+    const label = numerator === 1 && denominator === 2 ? "half" : fractionName(numerator, denominator);
+    const capLabel = `${label[0]!.toUpperCase()}${label.slice(1)}`;
+    return make("fractions", skill, level, `${numerator}-${denominator}-of-${whole}`,
+      `What is ${label} of ${whole}?`, String(answerValue),
+      `${whole} shared into ${denominator} equal groups is ${perGroup} in each group. ${capLabel} of ${whole} is ${answerValue}.`,
+      "fraction", { denominator, numerator, whole, part: perGroup, answerValue }, {
+        spoken: `What is ${label} of ${whole}?`,
+        instruction: `Share ${whole} equally into ${denominator} groups.`,
+        hint1: `Let's share ${whole} into ${denominator} equal groups.`,
+        hint2: numerator === 1 ? `Count how many are in 1 equal group.` : `Count how many are in ${numerator} of the ${denominator} equal groups.`,
+        strategy: "We shared equally.",
+      });
   },
   measure: (_level, rng, options = {}) => {
     const skill = options.skillId ?? "ms.ruler";

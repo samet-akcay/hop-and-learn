@@ -131,6 +131,22 @@ describe("question generators", () => {
     for (const pseudoWord of WORD_LISTS.alien) expect(BLOCKED_ALIEN_WORDS).not.toContain(pseudoWord.toLowerCase());
   });
 
+  it("keeps fraction choices mathematically unambiguous across shapes and number lines", () => {
+    const rng = makeRng(404);
+    for (const skillId of ["fr.shapes", "fr.line"] as const) {
+      for (let i = 0; i < 100; i++) {
+        const q = generateQuestion("fractions", 2, rng, [], { skillId });
+        const [ansN, ansD] = q.answer.split("/").map(Number);
+        const others = (q.choices ?? []).filter(c => c !== q.answer);
+        expect(others.length).toBe(2);
+        for (const choice of others) {
+          const [n, d] = choice.split("/").map(Number);
+          expect(n! * ansD!).not.toBe(ansN! * d!);
+        }
+      }
+    }
+  });
+
   it("keeps number-line addition and subtraction within the displayed range", () => {
     const rng = makeRng(92);
     for (const level of levels) {

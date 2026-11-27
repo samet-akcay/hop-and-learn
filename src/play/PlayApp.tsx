@@ -153,7 +153,14 @@ function GameScreen({ activityId, data, voice, sound, onStar, onHome }: {
       {solved
         ? <div class="play-success" role="status"><span class="star-pop" aria-hidden="true">★</span><h2>{attempts ? "We fixed it!" : "We did it!"}</h2><p>{question.model}</p><button class="next-button" onClick={next}>Next <span>→</span></button></div>
         : (question.answerKind === "choice" && question.choices
-          ? <div class="big-choices" role="group" aria-label="Choose an answer">{question.choices.map(choice => <button key={choice} class={`big-choice ${choice.length > 5 ? "wordy" : ""}`} disabled={wrong.includes(choice)} onClick={() => submit(choice)}>{choice}{question.unit === "p" || question.unit === "cm" ? <small>{question.unit}</small> : null}</button>)}</div>
+          ? <div class="big-choices" role="group" aria-label="Choose an answer">{question.choices.map(choice => {
+            const fractionMatch = /^(\d+)\/(\d+)$/.exec(choice);
+            return <button key={choice} class={`big-choice ${choice.length > 5 ? "wordy" : ""} ${fractionMatch ? "fraction-choice" : ""}`} aria-label={fractionMatch ? choice : undefined} disabled={wrong.includes(choice)} onClick={() => submit(choice)}>
+              {fractionMatch
+                ? <span class="stacked-fraction" aria-hidden="true"><span>{fractionMatch[1]}</span><i /><span>{fractionMatch[2]}</span></span>
+                : <>{choice}{question.unit === "p" || question.unit === "cm" ? <small>{question.unit}</small> : null}</>}
+            </button>;
+          })}</div>
           : <div class="play-answer"><AnswerInput key={`${question.key}-${attempts}`} question={question} disabled={false} onSubmit={submit} /></div>)}
     </main>
     {milestone && <div class="modal-scrim"><section class="milestone-card" role="dialog" aria-modal="true">
