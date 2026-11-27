@@ -4,8 +4,10 @@
 .star-pill { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 999px; background: #fff; box-shadow: 0 6px 18px rgba(36,64,79,.12); font-size: 24px; font-weight: 850; }
 .star-pill span { color: #e2a800; font-size: 26px; }
 .icon-button { display: grid; place-items: center; width: 52px; height: 52px; border: 2px solid var(--play-line); border-radius: 50%; color: var(--play-ink); background: #fff; font-size: 24px; cursor: pointer; }
+.hold-wrap { position: relative; display: flex; align-items: center; gap: 8px; }
+.hold-hint { padding: 6px 12px; border: 1.5px solid var(--play-line); border-radius: 999px; background: #fff; color: var(--play-muted); font-size: 13px; font-weight: 700; white-space: nowrap; box-shadow: 0 4px 12px rgba(36,64,79,.1); }
 .hold-button { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border: 2px solid var(--play-line); border-radius: 50%; color: var(--play-muted); background: rgba(255,255,255,.7); font-size: 20px; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
-.hold-ring { position: absolute; inset: -5px; border-radius: 50%; background: conic-gradient(var(--mint, #3e9a37) var(--hold), transparent 0); opacity: 0; -webkit-mask: radial-gradient(circle, transparent 24px, #000 25px); mask: radial-gradient(circle, transparent 24px, #000 25px); }
+.hold-ring { position: absolute; inset: -5px; border-radius: 50%; background: conic-gradient(var(--mint, #3e9a37) var(--hold), transparent 0); opacity: 0; pointer-events: none; -webkit-mask: radial-gradient(circle, transparent 24px, #000 25px); mask: radial-gradient(circle, transparent 24px, #000 25px); }
 .hold-button.holding .hold-ring { opacity: 1; animation: hold-fill 2s linear forwards; }
 @property --hold { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 @keyframes hold-fill { to { --hold: 360deg; } }

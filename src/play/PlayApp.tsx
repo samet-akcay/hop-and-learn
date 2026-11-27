@@ -9,8 +9,9 @@ import { speak, stopSpeaking } from "../core/speech";
 import { DEFAULT_SETTINGS, type ActivityId, type AreaId, type GeneratedQuestion } from "../core/types";
 import { GameIcon } from "../kit/GameIcon";
 import { SUIT_THEME } from "../kit/theme";
+import { POLISHED_ACTIVITIES } from "../scenes/registry";
 import { makeQuestion } from "./questions";
-import { DEFAULT_PLAY_SETTINGS, freshPlayData, savePlayData, type MaxNumber, type PlayData, type PlaySettings } from "./settings";
+import { DEFAULT_PLAY_SETTINGS, freshPlayData, savePlayData, type PlayData, type PlaySettings } from "./settings";
 
 const MISTAKE_LINE = "Uh oh. That's okay. Let's fix it.";
 const BLURBS: Partial<Record<ActivityId, string>> = {
@@ -43,7 +44,8 @@ export function PlayApp({ initialData }: { initialData: PlayData }) {
   const [cornerOpen, setCornerOpen] = useState(false);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "g") { event.preventDefault(); setCornerOpen(true); }
+      const isG = event.key.toLowerCase() === "g" || event.code === "KeyG";
+      if ((event.ctrlKey || event.altKey) && event.shiftKey && isG) { event.preventDefault(); setCornerOpen(true); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -66,7 +68,7 @@ export function PlayApp({ initialData }: { initialData: PlayData }) {
 function Menu({ data, onPlay, onHero, onOpenCorner, onPin }: { data: PlayData; onPlay: (id: ActivityId) => void; onHero: (hero: PlayData["hero"]) => void; onOpenCorner: () => void; onPin: (id: ActivityId) => void }) {
   const visible = ACTIVITIES.filter(activity =>
     !data.settings.hiddenGames.includes(activity.id)
-    && (data.settings.showAllGames || data.pinned.includes(activity.id)));
+    && (data.settings.showAllGames || POLISHED_ACTIVITIES.has(activity.id) || data.pinned.includes(activity.id)));
   const pinned = data.pinned.map(id => visible.find(activity => activity.id === id)).filter((activity): activity is (typeof ACTIVITIES)[number] => !!activity);
   const heroTheme = SUIT_THEME[data.hero];
   const card = (activity: (typeof ACTIVITIES)[number], big: boolean) => <div key={activity.id} class={`game-card ${big ? "big" : ""}`}>
@@ -162,9 +164,7 @@ function GameScreen({ activityId, data, voice, sound, onStar, onHome }: {
         : (question.answerKind === "choice" && question.choices
           ? <div class="big-choices" role="group" aria-label="Choose an answer">{question.choices.map(choice => {
             const fractionMatch = /^(\d+)\/(\d+)$/.exec(choice);
-            // One wordy choice makes them all wordy, so every button is the same size.
-            const wordy = question.choices!.some(option => option.length > 5 && !/^\d+\/\d+$/.test(option));
-            return <button key={choice} class={`big-choice ${wordy ? "wordy" : ""} ${fractionMatch ? "fraction-choice" : ""}`} aria-label={fractionMatch ? choice : undefined} disabled={wrong.includes(choice)} onClick={() => submit(choice)}>
+            return <button key={choice} class={`big-choice ${choice.length > 5 ? "wordy" : ""} ${fractionMatch ? "fraction-choice" : ""}`} aria-label={fractionMatch ? choice : undefined} disabled={wrong.includes(choice)} onClick={() => submit(choice)}>
               {fractionMatch
                 ? <span class="stacked-fraction" aria-hidden="true"><span>{fractionMatch[1]}</span><i /><span>{fractionMatch[2]}</span></span>
                 : <>{choice}{question.unit === "p" || question.unit === "cm" ? <small>{question.unit}</small> : null}</>}
@@ -187,14 +187,46 @@ function StarPill({ stars }: { stars: number }) {
 /** A button that only works when held for two seconds, so grown-up settings stay out of the way. */
 function HoldButton({ label, onHold }: { label: string; onHold: () => void }) {
   const timer = useRef<number | undefined>(undefined);
+  const hintTimer = useRef<number | undefined>(undefined);
+  const opened = useRef(false);
   const [holding, setHolding] = useState(false);
-  const start = () => { setHolding(true); timer.current = window.setTimeout(() => { setHolding(false); onHold(); }, 2000); };
-  const stop = () => { setHolding(false); window.clearTimeout(timer.current); };
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-  return <button class={`hold-button ${holding ? "holding" : ""}`} title={`${label}: press and hold`} aria-label={`${label} (press and hold)`}
-    onPointerDown={start} onPointerUp={stop} onPointerLeave={stop} onPointerCancel={stop} onContextMenu={event => event.preventDefault()}>
-    ⚙<span class="hold-ring" />
-  </button>;
+  const [hint, setHint] = useState(false);
+
+  const start = (event: PointerEvent) => {
+    opened.current = false;
+    setHint(false);
+    setHolding(true);
+    try { (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId); } catch { /* synthetic events */ }
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
+      opened.current = true;
+      setHolding(false);
+      onHold();
+    }, 2000);
+  };
+
+  const stop = (showHint: boolean) => {
+    window.clearTimeout(timer.current);
+    setHolding(false);
+    if (showHint && !opened.current) {
+      setHint(true);
+      window.clearTimeout(hintTimer.current);
+      hintTimer.current = window.setTimeout(() => setHint(false), 3000);
+    }
+  };
+
+  useEffect(() => () => {
+    window.clearTimeout(timer.current);
+    window.clearTimeout(hintTimer.current);
+  }, []);
+
+  return <div class="hold-wrap">
+    {hint && <span class="hold-hint" role="status">Hold ⚙ for 2 seconds</span>}
+    <button class={`hold-button ${holding ? "holding" : ""}`} title={`${label}: press and hold for 2 seconds`} aria-label={`${label} (press and hold)`}
+      onPointerDown={start} onPointerUp={() => stop(true)} onPointerCancel={() => stop(false)} onContextMenu={event => event.preventDefault()}>
+      ⚙<span class="hold-ring" />
+    </button>
+  </div>;
 }
 
 function Choice<T extends string | number>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (value: T) => void }) {
@@ -208,39 +240,26 @@ function GrownupCorner({ data, onChange, onResetStars, onClose }: { data: PlayDa
   const set = (change: Partial<PlaySettings>) => onChange({ ...settings, ...change });
   const [confirmReset, setConfirmReset] = useState(false);
   const toggle = <T,>(list: T[], item: T) => list.includes(item) ? list.filter(value => value !== item) : [...list, item];
-  const rangeOptions: { value: MaxNumber; label: string }[] = [
-    { value: 10, label: "10" }, { value: 20, label: "20" }, { value: 30, label: "30" }, { value: 50, label: "50" }, { value: 100, label: "100" },
-  ];
   return <div class="modal-scrim"><section class="grownup-corner" role="dialog" aria-modal="true" aria-label="Grown-up corner">
     <header><h2>Grown-up corner</h2><button class="next-button" onClick={onClose}>Done</button></header>
 
     <h3>How hard</h3>
-    <Choice label="Numbers up to" value={settings.maxNumber} options={rangeOptions} onChange={maxNumber => set({ maxNumber, numberLineMax: undefined })} />
+    <Choice label="Numbers up to" value={settings.maxNumber} options={[{ value: 10, label: "10" }, { value: 20, label: "20" }, { value: 100, label: "100" }]} onChange={maxNumber => set({ maxNumber })} />
     <Choice label="Other games" value={settings.difficulty} options={[{ value: "easy", label: "Easy" }, { value: "medium", label: "Medium" }, { value: "hard", label: "Hard" }]} onChange={difficulty => set({ difficulty })} />
 
     <h3>Number Line</h3>
-    <Choice label="Line up to" value={settings.numberLineMax ?? settings.maxNumber} options={rangeOptions} onChange={numberLineMax => set({ numberLineMax })} />
     <Choice label="Sums" value={settings.numberLineOps} options={[{ value: "add", label: "+ only" }, { value: "sub", label: "− only" }, { value: "both", label: "+ and −" }]} onChange={numberLineOps => set({ numberLineOps })} />
     <Choice label="Most hops" value={settings.maxHops} options={[{ value: 3, label: "3" }, { value: 5, label: "5" }, { value: 10, label: "10" }]} onChange={maxHops => set({ maxHops })} />
 
     <h3>Number Bonds and Times Tables</h3>
-    <Choice label="Bonds to" value={settings.bondsTo} options={[{ value: 10, label: "10" }, { value: 20, label: "20" }]} onChange={bondsTo => set({ bondsTo, ...(bondsTo === 20 && settings.maxNumber < 20 ? { maxNumber: 20 } : {}) })} />
-    <Choice label="Groups up to" value={settings.maxGroups} options={[{ value: 5, label: "5" }, { value: 10, label: "10" }]} onChange={maxGroups => set({ maxGroups })} />
+    <Choice label="Bonds to" value={settings.bondsTo} options={[{ value: 10, label: "10" }, { value: 20, label: "20" }]} onChange={bondsTo => set({ bondsTo })} />
     <div class="corner-row"><span>Times tables</span><div class="segmented wrap" role="group" aria-label="Times tables">
       {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => <button key={table} class={settings.tables.includes(table) ? "on" : ""} aria-pressed={settings.tables.includes(table)} onClick={() => { const tables = toggle(settings.tables, table); if (tables.length) set({ tables: tables.sort((a, b) => a - b) }); }}>× {table}</button>)}
     </div></div>
 
-    <h3>Fractions</h3>
-    <Choice label="Topics" value={settings.fractionFocus} options={[
-      { value: "shapes", label: "Shapes" },
-      { value: "sharing", label: "+ Sharing" },
-      { value: "wall", label: "+ Wall" },
-      { value: "all", label: "+ Line" },
-    ]} onChange={fractionFocus => set({ fractionFocus })} />
-
     <h3>Games on the menu</h3>
-    <Choice label="Menu view" value={settings.showAllGames ? "all" : "pinned"} options={[{ value: "all", label: "All 31 games" }, { value: "pinned", label: "My games only" }]} onChange={value => set({ showAllGames: value === "all" })} />
-    <div class="game-toggles">{ACTIVITIES.map(activity => {
+    <Choice label="Show games" value={settings.showAllGames ? "all" : "ready"} options={[{ value: "ready", label: "Ready games only" }, { value: "all", label: "All 31 games" }]} onChange={value => set({ showAllGames: value === "all" })} />
+    <div class="game-toggles">{ACTIVITIES.filter(activity => settings.showAllGames || POLISHED_ACTIVITIES.has(activity.id)).map(activity => {
       const shown = !settings.hiddenGames.includes(activity.id);
       return <button key={activity.id} class={shown ? "on" : ""} aria-pressed={shown} onClick={() => set({ hiddenGames: toggle(settings.hiddenGames, activity.id) })}>{shown ? "✓ " : ""}{activity.title}</button>;
     })}</div>
@@ -255,6 +274,6 @@ function GrownupCorner({ data, onChange, onResetStars, onClose }: { data: PlayDa
         ? <div class="segmented"><button class="danger" onClick={() => { onResetStars(); setConfirmReset(false); }}>Yes, reset stars</button><button onClick={() => setConfirmReset(false)}>Cancel</button></div>
         : <div class="segmented"><button onClick={() => setConfirmReset(true)}>Reset stars</button><button onClick={() => onChange({ ...DEFAULT_PLAY_SETTINGS })}>Default settings</button></div>}
     </div>
-    <p class="corner-note">Open this corner by holding ⚙ for 2 seconds, or with Ctrl + Shift + G. Everything is saved on this computer only.</p>
+    <p class="corner-note">Open this corner by holding ⚙ for 2 seconds, or with Ctrl + Shift + G (or Option + Shift + G). Everything is saved on this computer only.</p>
   </section></div>;
 }
