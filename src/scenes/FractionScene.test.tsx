@@ -41,7 +41,7 @@ describe("FractionScene", () => {
     for (const shape of ["bar", "circle", "square"] as const) {
       for (const equal of [true, false]) {
         const question = makeFractionQuestion("fr.equal", { shape, parts: 4, denominator: 4, equal, unequal: !equal });
-        const { container } = render(<FractionScene question={question} suit="space" />);
+        const { container } = render(<FractionScene question={question} suit="space" level={2} />);
         const svg = container.querySelector("svg.fraction-svg");
         expect(svg, `${shape} equal=${equal}`).toBeTruthy();
         const parts = container.querySelectorAll("[data-part]");
@@ -54,13 +54,13 @@ describe("FractionScene", () => {
 
   it("draws bar segments with equal widths when equal and distinct widths when unequal", () => {
     const equalQ = makeFractionQuestion("fr.equal", { shape: "bar", parts: 3, denominator: 3, equal: true });
-    const equalRender = render(<FractionScene question={equalQ} suit="space" />);
+    const equalRender = render(<FractionScene question={equalQ} suit="space" level={2} />);
     const equalWidths = [...equalRender.container.querySelectorAll("[data-part] rect")].map(el => Number(el.getAttribute("width")));
     expect(Math.max(...equalWidths) - Math.min(...equalWidths)).toBeLessThan(0.1);
     cleanup();
 
     const unequalQ = makeFractionQuestion("fr.equal", { shape: "bar", parts: 3, denominator: 3, equal: false });
-    const unequalRender = render(<FractionScene question={unequalQ} suit="space" />);
+    const unequalRender = render(<FractionScene question={unequalQ} suit="space" level={2} />);
     const unequalWidths = [...unequalRender.container.querySelectorAll("[data-part] rect")].map(el => Number(el.getAttribute("width")));
     expect(Math.max(...unequalWidths) - Math.min(...unequalWidths)).toBeGreaterThan(80);
   });
@@ -68,7 +68,7 @@ describe("FractionScene", () => {
   it("renders shaded fraction shapes with exact numerator/denominator counts and tap-to-count badges", async () => {
     const user = userEvent.setup();
     const question = makeFractionQuestion("fr.shapes", { shape: "circle", numerator: 3, denominator: 4 });
-    const { container } = render(<FractionScene question={question} suit="robot" />);
+    const { container } = render(<FractionScene question={question} suit="robot" level={2} />);
     expect(container.querySelectorAll('[data-shaded="true"]')).toHaveLength(3);
     expect(container.querySelectorAll('[data-shaded="false"]')).toHaveLength(1);
 
@@ -78,13 +78,14 @@ describe("FractionScene", () => {
     expect(container.querySelector(".fraction-part-num")?.textContent).toBe("1");
   });
 
-  it("lets him share counters round-by-round into equal groups for fr.sets", async () => {
+  it("lets him share suit tokens round-by-round into equal groups for fr.sets", async () => {
     const user = userEvent.setup();
     const onStep = vi.fn();
     const onWorkComplete = vi.fn();
     const question = makeFractionQuestion("fr.sets", { whole: 12, denominator: 4, numerator: 1, part: 3 });
-    const { container } = render(<FractionScene question={question} suit="space" onStep={onStep} onWorkComplete={onWorkComplete} />);
+    const { container } = render(<FractionScene question={question} suit="webhero" level={2} onStep={onStep} onWorkComplete={onWorkComplete} />);
 
+    expect(container.textContent).toContain("web balls");
     expect(container.querySelectorAll("[data-group]")).toHaveLength(4);
     expect(container.querySelectorAll('[data-target="true"]')).toHaveLength(1);
     expect(container.querySelectorAll('[data-token="shared"]')).toHaveLength(0);
@@ -94,7 +95,6 @@ describe("FractionScene", () => {
     expect(container.querySelectorAll('[data-token="shared"]')).toHaveLength(4);
     expect(onStep).toHaveBeenCalledWith(1);
 
-    // Space key deals another round
     fireEvent.keyDown(window, { key: " " });
     expect(container.querySelectorAll('[data-token="shared"]')).toHaveLength(8);
 
@@ -107,18 +107,18 @@ describe("FractionScene", () => {
 
   it("renders aligned guide line for equivalent fractions and separate guide lines for non-equivalent fractions", () => {
     const sameQ = makeFractionQuestion("fr.equivalent", { numerator: 2, denominator: 4, numerator2: 1, denominator2: 2, same: true });
-    const sameRender = render(<FractionScene question={sameQ} suit="space" />);
+    const sameRender = render(<FractionScene question={sameQ} suit="space" level={2} />);
     expect(sameRender.container.querySelectorAll(".fraction-guide-line")).toHaveLength(1);
     cleanup();
 
     const diffQ = makeFractionQuestion("fr.equivalent", { numerator: 2, denominator: 4, numerator2: 1, denominator2: 3, same: false });
-    const diffRender = render(<FractionScene question={diffQ} suit="space" />);
+    const diffRender = render(<FractionScene question={diffQ} suit="space" level={2} />);
     expect(diffRender.container.querySelectorAll(".fraction-guide-line")).toHaveLength(2);
   });
 
   it("renders a 0-to-1 fraction number line with the hero for fr.line", () => {
     const question = generateQuestion("fractions", 2, makeRng(19), [], { skillId: "fr.line" });
-    const { container } = render(<FractionScene question={question} suit="dino" />);
+    const { container } = render(<FractionScene question={question} suit="dino" level={2} />);
     expect(container.querySelector("svg.fraction-line-svg")).toBeTruthy();
     expect(container.querySelector(".captain-hop.hop-dino")).toBeTruthy();
     expect(container.textContent).toContain("0");

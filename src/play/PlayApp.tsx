@@ -7,14 +7,18 @@ import { makeRng } from "../core/rng";
 import { playSound, type SfxName } from "../core/sound";
 import { speak, stopSpeaking } from "../core/speech";
 import { DEFAULT_SETTINGS, type ActivityId, type AreaId, type GeneratedQuestion } from "../core/types";
+import { GameIcon } from "../kit/GameIcon";
+import { SUIT_THEME } from "../kit/theme";
+import { POLISHED_ACTIVITIES } from "../scenes/registry";
 import { makeQuestion } from "./questions";
 import { DEFAULT_PLAY_SETTINGS, freshPlayData, savePlayData, type PlayData, type PlaySettings } from "./settings";
 
 const MISTAKE_LINE = "Uh oh. That's okay. Let's fix it.";
 const BLURBS: Partial<Record<ActivityId, string>> = {
   numberline: "Hop along the line to add and take away",
-  bonds: "Find the missing part that makes 10 or 20",
-  times: "Make groups of dots and count them up",
+  bonds: "Fill the ten-frame to make 10 or 20",
+  times: "Build equal pods and count them up",
+  fractions: "Equal parts, shaded shapes and fair sharing",
 };
 const SECTIONS: { area: AreaId; title: string }[] = [
   { area: "numbers", title: "Maths" },
@@ -61,11 +65,14 @@ export function PlayApp({ initialData }: { initialData: PlayData }) {
 }
 
 function Menu({ data, onPlay, onHero, onOpenCorner, onPin }: { data: PlayData; onPlay: (id: ActivityId) => void; onHero: (hero: PlayData["hero"]) => void; onOpenCorner: () => void; onPin: (id: ActivityId) => void }) {
-  const visible = ACTIVITIES.filter(activity => !data.settings.hiddenGames.includes(activity.id));
+  const visible = ACTIVITIES.filter(activity =>
+    !data.settings.hiddenGames.includes(activity.id)
+    && (data.settings.showAllGames || POLISHED_ACTIVITIES.has(activity.id) || data.pinned.includes(activity.id)));
   const pinned = data.pinned.map(id => visible.find(activity => activity.id === id)).filter((activity): activity is (typeof ACTIVITIES)[number] => !!activity);
+  const heroTheme = SUIT_THEME[data.hero];
   const card = (activity: (typeof ACTIVITIES)[number], big: boolean) => <div key={activity.id} class={`game-card ${big ? "big" : ""}`}>
     <button class="game-play" aria-label={activity.title} onClick={() => onPlay(activity.id)}>
-      <span class="game-icon">{activity.icon}</span><b>{activity.title}</b>{big && <small>{BLURBS[activity.id] ?? activity.summary}</small>}<span class="game-stars">★ {data.gameStars[activity.id] ?? 0}</span>
+      <span class="game-icon"><GameIcon activityId={activity.id} /></span><b>{activity.title}</b>{big && <small>{BLURBS[activity.id] ?? activity.summary}</small>}<span class="game-stars">★ {data.gameStars[activity.id] ?? 0}</span>
     </button>
     <button class={`pin-button ${big ? "pinned" : ""}`} aria-pressed={big} aria-label={`${big ? "Unpin" : "Pin"} ${activity.title}`} title={big ? "Unpin" : "Pin to my games"} onClick={() => onPin(activity.id)}>📌</button>
   </div>;
@@ -76,6 +83,7 @@ function Menu({ data, onPlay, onHero, onOpenCorner, onPin }: { data: PlayData; o
       <div class="hero-row" role="group" aria-label="Pick your hero">
         {SUITS.map(suit => <button key={suit.id} class={`hero-choice ${data.hero === suit.id ? "selected" : ""}`} aria-pressed={data.hero === suit.id} aria-label={suit.name} title={suit.name} onClick={() => onHero(suit.id)}><HeroAvatar suit={suit.id} /></button>)}
       </div>
+      <p class="hero-tagline">Playing with <b>{HERO_NAMES[data.hero]}</b> · collecting {heroTheme.tokenPlural}</p>
       <section class="my-games" aria-label="My games">
         <h2>My games</h2>
         {pinned.length ? <div class="core-games">{pinned.map(activity => card(activity, true))}</div> : <p class="menu-hint">Press 📌 on a game below to keep it here.</p>}
@@ -217,7 +225,8 @@ function GrownupCorner({ data, onChange, onResetStars, onClose }: { data: PlayDa
     </div></div>
 
     <h3>Games on the menu</h3>
-    <div class="game-toggles">{ACTIVITIES.map(activity => {
+    <Choice label="Show games" value={settings.showAllGames ? "all" : "ready"} options={[{ value: "ready", label: "Ready games only" }, { value: "all", label: "All 31 games" }]} onChange={value => set({ showAllGames: value === "all" })} />
+    <div class="game-toggles">{ACTIVITIES.filter(activity => settings.showAllGames || POLISHED_ACTIVITIES.has(activity.id)).map(activity => {
       const shown = !settings.hiddenGames.includes(activity.id);
       return <button key={activity.id} class={shown ? "on" : ""} aria-pressed={shown} onClick={() => set({ hiddenGames: toggle(settings.hiddenGames, activity.id) })}>{shown ? "✓ " : ""}{activity.title}</button>;
     })}</div>

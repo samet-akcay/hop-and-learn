@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from "preact/hooks";
 import type { GeneratedQuestion, Level, SuitId } from "../core/types";
-import { hopPose, type HopPose } from "./hop";
-import { HERO_NAMES, HeroCharacter } from "./HeroCharacter";
-import { FractionScene } from "./FractionScene";
+import { resolveScene } from "../scenes/registry";
 
 interface Props {
   question: GeneratedQuestion;
@@ -26,172 +23,34 @@ const list = (q: GeneratedQuestion, key: string) => Array.isArray(q.data[key]) ?
 export const WORK_VISUALS = ["numberline", "bonds", "array"];
 
 export function QuestionScene({ question, suit, level, onWorkComplete, onActivity, onStep, onPlayPhoneme, hasPhoneme, reducedMotion = false, initialComplete = false, initialSteps = 0, solved = false }: Props) {
-  // The line, counters and groups are always a tool he can use. Below level 3 they are also required work.
-  const hasTool = WORK_VISUALS.includes(question.visual);
-  const requiresWork = level <= 2 && hasTool;
-  const limit = question.visual === "numberline" ? num(question, "amount", 1)
-    : question.visual === "bonds" ? num(question, "missing", 1)
-      : num(question, "groups", 1);
-  const [steps, setSteps] = useState(initialSteps);
-  const [complete, setComplete] = useState(initialComplete || (hasTool && initialSteps >= limit));
-  useEffect(() => {
-    if (initialComplete) setComplete(true);
-    else if (requiresWork && initialSteps >= limit) onWorkComplete();
-  }, [initialComplete, initialSteps, limit, onWorkComplete, requiresWork]);
-
-  const doStep = () => {
-    onActivity?.();
-    const next = Math.min(limit, steps + 1);
-    setSteps(next);
-    onStep?.(next);
-    if (next >= limit) {
-      setComplete(true);
-      onWorkComplete();
-    }
-  };
-
-  // When he gets it right, the hero finishes the hops so he sees the answer on the line.
-  useEffect(() => {
-    if (!solved || !hasTool || steps >= limit) return;
-    const remaining = limit - steps;
-    const timer = window.setTimeout(() => setSteps(current => remaining > 6 || reducedMotion ? limit : Math.min(limit, current + 1)), 520);
-    return () => window.clearTimeout(timer);
-  }, [solved, hasTool, steps, limit, reducedMotion]);
-
-  useEffect(() => {
-    if (!hasTool || complete || solved) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLElement && event.target.closest("button, input, select, textarea")) return;
-      const expected = question.visual === "numberline" ? (str(question, "op", "+") === "+" ? "ArrowRight" : "ArrowLeft") : " ";
-      if (event.key === expected) { event.preventDefault(); doStep(); }
-      else if (question.visual === "numberline" && (event.key === "ArrowLeft" || event.key === "ArrowRight")) event.preventDefault();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [complete, solved, question.key, question.visual, hasTool, steps]);
+  const Scene = resolveScene(question);
+  if (Scene) {
+    return <div class="scene-wrap">
+      <Scene
+        question={question}
+        suit={suit}
+        level={level}
+        solved={solved}
+        reducedMotion={reducedMotion}
+        initialComplete={initialComplete}
+        initialSteps={initialSteps}
+        onActivity={onActivity}
+        onStep={onStep}
+        onWorkComplete={onWorkComplete}
+      />
+    </div>;
+  }
 
   return <div class="scene-wrap">
-    {question.visual === "numberline" && <NumberLine question={question} suit={suit} steps={steps} reducedMotion={reducedMotion} />}
-    {question.visual === "bonds" && <BondFrame question={question} steps={steps} suit={suit} />}
-    {question.visual === "array" && <ArrayScene question={question} steps={steps} suit={suit} />}
     {question.visual === "placevalue" && <PlaceValueScene question={question} />}
     {question.visual === "balance" && <BalanceScene question={question} />}
     {question.visual === "clock" && <ClockScene question={question} />}
-    {question.visual === "fraction" && <FractionScene question={question} suit={suit} solved={solved} reducedMotion={reducedMotion} onActivity={onActivity} onStep={onStep} onWorkComplete={onWorkComplete} />}
     {question.visual === "rover" && (question.activityId === "turns" ? <TurnScene question={question} /> : <RoverScene question={question} />)}
     {question.visual === "sentence" && <SentenceScene question={question} />}
     {question.visual === "chart" && <ChartScene question={question} />}
     {question.visual === "coins" && <CoinScene question={question} />}
     {question.visual === "shape" && <ShapeScene question={question} />}
     {question.visual === "picture" && <PictureScene question={question} onPlayPhoneme={onPlayPhoneme} hasPhoneme={hasPhoneme} />}
-    {hasTool && !solved && <div class="work-control">
-      {!complete && <button class="work-button" onMouseDown={event => event.preventDefault()} onClick={doStep}>
-        {question.visual === "numberline" ? <>HOP <span aria-hidden="true">{str(question, "op", "+") === "+" ? "→" : "←"}</span></> : question.visual === "bonds" ? "COUNT" : "GROUP"}
-      </button>}
-      <p aria-live="polite">{workText(question, steps, complete)}</p>
-    </div>}
-  </div>;
-}
-
-function workText(question: GeneratedQuestion, steps: number, complete: boolean): string {
-  if (question.visual === "numberline") {
-    const landed = num(question, "start") + (str(question, "op", "+") === "+" ? steps : -steps) * num(question, "jumpSize", 1);
-    if (complete) return `We landed on ${landed}!`;
-    return steps ? `Hop ${steps} of ${num(question, "amount")}` : `Need help? Press HOP ${num(question, "amount")} ${num(question, "amount") === 1 ? "time" : "times"}.`;
-  }
-  if (question.visual === "bonds") return complete ? `We counted ${steps} more.` : steps ? `${steps} more` : "Need help? Press COUNT.";
-  return complete ? `${num(question, "groups")} groups of ${num(question, "table")}` : steps ? `Group ${steps} of ${num(question, "groups")}` : "Need help? Press GROUP.";
-}
-
-function NumberLine({ question, suit, steps, reducedMotion }: { question: GeneratedQuestion; suit: SuitId; steps: number; reducedMotion: boolean }) {
-  const start = num(question, "start");
-  const min = num(question, "min", 0);
-  const max = num(question, "max", 20);
-  const op = str(question, "op", "+");
-  const jumpSize = num(question, "jumpSize", 1);
-  const pos = start + (op === "+" ? steps : -steps) * jumpSize;
-  const span = max - min;
-  const tickCount = span <= 20 ? span : 10;
-  const width = 820;
-  const lineY = 112;
-  const margin = 30;
-  const x = (n: number) => margin + ((n - min) / span) * (width - margin * 2);
-  const targetX = x(pos);
-  const [pose, setPose] = useState<HopPose>(() => hopPose(targetX, targetX, 1));
-  const poseRef = useRef(pose);
-  const previousSteps = useRef(steps);
-  useEffect(() => {
-    const fromX = poseRef.current.x;
-    const previous = previousSteps.current;
-    previousSteps.current = steps;
-    const reduced = reducedMotion || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || previous === steps) {
-      const landed = hopPose(targetX, targetX, 1);
-      poseRef.current = landed; setPose(landed);
-      return;
-    }
-    const startedAt = performance.now();
-    const duration = 620;
-    let frame = 0;
-    const animate = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / duration);
-      const next = hopPose(fromX, targetX, progress);
-      poseRef.current = next; setPose(next);
-      if (progress < 1) frame = requestAnimationFrame(animate);
-    };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [steps, targetX, reducedMotion]);
-  const isHopping = Math.abs(pose.x - targetX) > 0.5 || Math.abs(pose.y) > 0.5;
-  const arcMid = (pose.x + targetX) / 2;
-  return <div class="numberline-scene">
-    <svg viewBox={`0 0 ${width} 190`} role="img" aria-label={`Number line from ${min} to ${max}`} class="numberline-svg">
-      <line x1={margin} y1={lineY} x2={width - margin} y2={lineY} stroke="#bed0d8" stroke-width="9" stroke-linecap="round" />
-      {Array.from({ length: tickCount + 1 }, (_, index) => {
-        const n = min + (span <= 20 ? index : index * 10);
-        return <g key={n}>
-          <circle class={n % 10 === 0 ? "station-stop" : "line-stop"} cx={x(n)} cy={lineY} r={n === start ? 9 : n % 10 === 0 ? 8 : 6} fill={n === start ? "#e7b94f" : "#fff"} stroke="#6f8a99" stroke-width={n % 10 === 0 ? 4 : 3} />
-          {(span <= 20 || n % 20 === 0) && <text x={x(n)} y="155" text-anchor="middle" class="svg-label">{n}</text>}
-        </g>;
-      })}
-      {Array.from({ length: isHopping ? Math.max(0, steps - 1) : steps }, (_, i) => {
-        const from = x(start + (op === "+" ? i : -i) * jumpSize), to = x(start + (op === "+" ? i + 1 : -(i + 1)) * jumpSize);
-        return <path key={i} class="hop-trail" d={`M ${from} ${lineY - 7} Q ${(from + to) / 2} ${lineY - 52} ${to} ${lineY - 7}`} />;
-      })}
-      {steps > 0 && !isHopping && <circle class="landing-ring" cx={targetX} cy={lineY} r="15" />}
-      {isHopping && <path class={`hop-arc ${op === "+" ? "hop-arc-plus" : "hop-arc-minus"}`} d={`M ${pose.x} ${lineY - 7} Q ${arcMid} ${lineY - 70} ${targetX} ${lineY - 7}`} />}
-      <g class="hop-traveler" transform={`translate(${pose.x - 25} ${50 + pose.y}) scale(${pose.scaleX} ${pose.scaleY})`} aria-label={`${HERO_NAMES[suit]} jumping`}>
-        <g transform="translate(-7.5 -9) scale(1.3)"><HeroCharacter suit={suit} /></g>
-      </g>
-    </svg>
-  </div>;
-}
-
-function BondFrame({ question, steps, suit }: { question: GeneratedQuestion; steps: number; suit: SuitId }) {
-  const total = num(question, "total", 10);
-  const part = num(question, "part", 0);
-  const cells = Array.from({ length: total }, (_, i) => i);
-  return <div class={`bonds-scene bond-${suit}`}>
-    <div class="scene-caption"><span class="scene-chip">Whole: {total}</span><span>Fill the empty spaces</span></div>
-    <div class="ten-frame" style={{ gridTemplateColumns: `repeat(10, minmax(18px, 1fr))` }}>
-      {cells.map(i => <div class={`counter-cell ${i < part ? "filled-blue" : i < part + steps ? "filled-gold" : ""}`} key={i} aria-label={i < part + steps ? "filled counter" : "empty space"} />)}
-    </div>
-    <div class="part-whole-row"><span class="part-chip">Part {part}</span><span class="part-link">+</span><span class="part-chip missing">? {steps ? `(${steps} more)` : "missing part"}</span><span class="part-link">=</span><span class="part-chip whole">Whole {total}</span></div>
-  </div>;
-}
-
-function ArrayScene({ question, steps, suit }: { question: GeneratedQuestion; steps: number; suit: SuitId }) {
-  const groups = num(question, "groups");
-  const table = num(question, "table");
-  const shown = Math.min(groups, steps);
-  return <div class={`array-scene array-${suit}`}>
-    <div class="scene-caption"><span class="scene-chip">Equal groups</span><span>{groups} {groups === 1 ? "group" : "groups"} of {table}</span></div>
-    <div class="dot-groups">
-      {Array.from({ length: groups }, (_, row) => <div class={`dot-group ${row < shown ? "group-shown" : ""}`} key={row}>
-        <span class="group-index">Group {row + 1}</span>
-        <div class="dots">{Array.from({ length: table }, (_, col) => <span class={`dot ${row < shown ? "dot-filled" : ""}`} key={col} />)}</div>
-      </div>)}
-    </div>
   </div>;
 }
 

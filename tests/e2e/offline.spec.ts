@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 test("the installed app shell can reload without network access", async ({ page, context }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Hop & Learn" })).toBeVisible();
+  await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
   await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
   await page.waitForLoadState("networkidle");

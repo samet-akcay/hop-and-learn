@@ -25,10 +25,16 @@ async function hopToTheEnd(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("Hop & Learn", () => {
-  it("shows the three main games pinned at the top and the other games below", () => {
+  it("shows the four ready games by default, and reveals all games when enabled in settings", () => {
     render(<PlayApp initialData={quietData()} />);
     const cards = [...document.querySelectorAll(".my-games .game-card b")].map(item => item.textContent);
-    expect(cards).toEqual(["Number Line", "Number Bonds", "Times Tables"]);
+    expect(cards).toEqual(["Number Line", "Number Bonds", "Times Tables", "Fractions"]);
+    expect(screen.queryByRole("button", { name: "Money", exact: true })).toBeNull();
+    cleanup();
+
+    const allData = quietData();
+    allData.settings.showAllGames = true;
+    render(<PlayApp initialData={allData} />);
     expect(screen.getByRole("button", { name: "Money", exact: true })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Sentence Builder", exact: true })).toBeTruthy();
   });
@@ -69,11 +75,11 @@ describe("Hop & Learn", () => {
   it("pins a game into My games and unpins it again", async () => {
     const user = userEvent.setup();
     render(<PlayApp initialData={quietData()} />);
-    await user.click(screen.getByRole("button", { name: "Pin Money" }));
-    expect([...document.querySelectorAll(".my-games .game-card b")].map(item => item.textContent)).toContain("Money");
     await user.click(screen.getByRole("button", { name: "Unpin Number Line" }));
     expect([...document.querySelectorAll(".my-games .game-card b")].map(item => item.textContent)).not.toContain("Number Line");
     expect(screen.getByRole("button", { name: "Pin Number Line" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Pin Number Line" }));
+    expect([...document.querySelectorAll(".my-games .game-card b")].map(item => item.textContent)).toContain("Number Line");
   });
 
   it("goes back to the menu with the home button", async () => {
@@ -82,7 +88,7 @@ describe("Hop & Learn", () => {
     expect(screen.getByRole("heading", { name: "Hop & Learn" })).toBeTruthy();
   });
 
-  it("opens the grown-up corner only after a two-second hold, and hides games from the menu", async () => {
+  it("opens the grown-up corner only after a two-second hold, and toggles/hides games", async () => {
     vi.useFakeTimers();
     render(<PlayApp initialData={quietData()} />);
     const gear = screen.getByRole("button", { name: /Grown-ups/ });
@@ -93,9 +99,11 @@ describe("Hop & Learn", () => {
     fireEvent.pointerDown(gear);
     vi.advanceTimersByTime(2000);
     expect(await screen.findByRole("dialog", { name: "Grown-up corner" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "All 31 games" }));
     fireEvent.click(screen.getByRole("button", { name: "✓ Money" }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     expect(screen.queryByRole("button", { name: "Money", exact: true })).toBeNull();
     expect(screen.queryByText("Money")).toBeNull();
+    expect(screen.getByRole("button", { name: "Sentence Builder", exact: true })).toBeTruthy();
   });
 });

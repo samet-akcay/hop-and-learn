@@ -173,6 +173,24 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .numberline-svg { width: 100%; max-height: 180px; overflow: visible; }
 .svg-label { fill: #a9c0cb; font-size: 18px; font-weight: 750; }.numberline-svg .svg-label { fill: #435d69; }.child-shell .svg-label { fill: #435d69; }.svg-small { fill: var(--gold); font-size: 12px; font-weight: 800; }
 .captain-hop { transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 4px 3px rgba(0,0,0,.25)); }.captain-hop.hop-robot circle:last-of-type { stroke: #8bc5e1; }.captain-hop.hop-monster circle:last-of-type { stroke: #b5c58b; }.hop-arc { fill: none; stroke-width: 4; stroke-dasharray: 7 7; stroke-linecap: round; animation: hop-trail .62s linear; opacity: .85; }.hop-arc-plus { stroke: var(--mint); }.hop-arc-minus { stroke: var(--gold); }@keyframes hop-trail { from { stroke-dashoffset: 105; opacity: .2; } to { stroke-dashoffset: 0; opacity: .85; } }
+.kit-scene { position: relative; width: min(100%, 900px); margin: 0 auto; }
+.kit-scene-head { position: relative; display: flex; align-items: center; justify-content: center; min-height: 28px; margin-bottom: 4px; }
+.kit-scene-head .scene-caption { margin-bottom: 0; }
+.kit-hero-buddy { position: absolute; right: 2px; top: -6px; display: flex; align-items: center; justify-content: center; width: 46px; height: 52px; border-radius: 16px; background: rgba(255,255,255,.72); border: 1.5px solid var(--scene-border, #c7d9e2); box-shadow: 0 4px 10px rgba(36,64,79,.08); transition: transform .25s cubic-bezier(.2,1.6,.4,1); }
+.kit-hero-buddy .kit-hero-avatar { width: 34px; height: 40px; }
+.kit-hero-buddy.celebrate { transform: translateY(-4px) scale(1.08); border-color: #e2a800; background: #fffdf2; }
+.kit-hero-star { position: absolute; top: -8px; right: -6px; color: #e2a800; font-size: 16px; line-height: 1; text-shadow: 0 1px 0 #fff; }
+.kit-scene-stage { width: 100%; }
+.kit-scene-note { margin: 8px auto 2px; color: var(--muted); font-size: 14px; font-weight: 650; text-align: center; }
+.kit-scene-note b { color: var(--ink-strong); font-weight: 850; }
+.kit-svg { display: block; margin: 6px auto 4px; overflow: visible; }
+.bonds-svg { width: min(100%, 620px); height: auto; }
+.times-svg { width: min(100%, 720px); height: auto; }
+.kit-interactive { cursor: pointer; transition: opacity .12s ease; }
+.kit-interactive:hover { opacity: .88; }
+.kit-bar-label { font-size: 18px; font-weight: 850; }
+.kit-pod-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.kit-pod-count { font-size: 13px; font-weight: 900; }
 .fraction-svg { display: block; margin: 6px auto 4px; overflow: visible; }
 .fraction-bar-svg { width: min(100%, 480px); height: auto; }
 .fraction-circle-svg, .fraction-square-svg { width: min(100%, 240px); height: auto; }

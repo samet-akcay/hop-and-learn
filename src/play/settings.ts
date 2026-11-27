@@ -13,6 +13,8 @@ export interface PlaySettings {
   tables: number[];
   /** How hard the other games are. */
   difficulty: Difficulty;
+  /** Show work-in-progress games that have not yet been rebuilt on the new visual kit. */
+  showAllGames: boolean;
   hiddenGames: ActivityId[];
   speech: boolean;
   sound: boolean;
@@ -34,6 +36,7 @@ export const DEFAULT_PLAY_SETTINGS: PlaySettings = {
   bondsTo: 20,
   tables: [2, 5, 10],
   difficulty: "easy",
+  showAllGames: false,
   hiddenGames: [],
   speech: true,
   sound: true,
@@ -42,7 +45,7 @@ export const DEFAULT_PLAY_SETTINGS: PlaySettings = {
 export const STORAGE_KEY = "math-play-v2";
 
 export function freshPlayData(): PlayData {
-  return { stars: 0, gameStars: {}, hero: "pond", pinned: ["numberline", "bonds", "times"], settings: { ...DEFAULT_PLAY_SETTINGS } };
+  return { stars: 0, gameStars: {}, hero: "pond", pinned: ["numberline", "bonds", "times", "fractions"], settings: { ...DEFAULT_PLAY_SETTINGS } };
 }
 
 export function loadPlayData(): PlayData {

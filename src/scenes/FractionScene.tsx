@@ -1,29 +1,14 @@
 import { useEffect, useId, useRef, useState } from "preact/hooks";
-import type { GeneratedQuestion, SuitId } from "../core/types";
-import { HERO_NAMES, HeroCharacter } from "./HeroCharacter";
-
-export interface FractionSceneProps {
-  question: GeneratedQuestion;
-  suit: SuitId;
-  solved?: boolean;
-  reducedMotion?: boolean;
-  onActivity?: () => void;
-  onStep?: (steps: number) => void;
-  onWorkComplete?: () => void;
-}
+import type { GeneratedQuestion } from "../core/types";
+import { HERO_NAMES, HeroCharacter } from "../activities/HeroCharacter";
+import { SceneFrame } from "../kit/SceneFrame";
+import { SuitToken } from "../kit/SuitToken";
+import { ART, SUIT_THEME } from "../kit/theme";
+import type { SceneProps } from "./types";
 
 const num = (q: GeneratedQuestion, key: string, fallback = 0) => Number(q.data[key] ?? fallback);
 const str = (q: GeneratedQuestion, key: string, fallback = "") => String(q.data[key] ?? fallback);
 const bool = (q: GeneratedQuestion, key: string, fallback = false) => Boolean(q.data[key] ?? fallback);
-
-const SHADED_FILL = "#f0be4f";
-const SHADED_STROKE = "#9b6d0d";
-const SECOND_FILL = "#6bb5d6";
-const SECOND_STROKE = "#2c6f8e";
-const UNSHADED_FILL = "#ffffff";
-const NEUTRAL_FILL = "#eaf4f9";
-const NEUTRAL_ACTIVE = "#f6d887";
-const LINE_STROKE = "#2c4a58";
 
 /** SVG path for a circular sector measured clockwise from 12 o'clock (0 deg = top). */
 export function pieSlicePath(cx: number, cy: number, r: number, startDeg: number, endDeg: number): string {
@@ -56,7 +41,7 @@ function fractionWord(numerator: number, denominator: number): string {
   return `${numerator}/${denominator}`;
 }
 
-function StackedFractionSvg({ x, y, numerator, denominator, color = LINE_STROKE }: {
+function StackedFractionSvg({ x, y, numerator, denominator, color = ART.stroke }: {
   x: number; y: number; numerator: number; denominator: number; color?: string;
 }) {
   return <g class="svg-stacked-fraction" fill={color}>
@@ -66,19 +51,17 @@ function StackedFractionSvg({ x, y, numerator, denominator, color = LINE_STROKE 
   </g>;
 }
 
-export function FractionScene(props: FractionSceneProps) {
+export function FractionScene(props: SceneProps) {
   const { question } = props;
-  if (question.skillId === "fr.equal") return <EqualPartsDiagram question={question} solved={props.solved} onActivity={props.onActivity} />;
-  if (question.skillId === "fr.shapes") return <ShadedShapeDiagram question={question} solved={props.solved} onActivity={props.onActivity} />;
-  if (question.skillId === "fr.equivalent") return <EquivalentWallDiagram question={question} solved={props.solved} />;
-  if (question.skillId === "fr.line") return <FractionNumberLineDiagram question={question} suit={props.suit} solved={props.solved} />;
+  if (question.skillId === "fr.equal") return <EqualPartsDiagram {...props} />;
+  if (question.skillId === "fr.shapes") return <ShadedShapeDiagram {...props} />;
+  if (question.skillId === "fr.equivalent") return <EquivalentWallDiagram {...props} />;
+  if (question.skillId === "fr.line") return <FractionNumberLineDiagram {...props} />;
   return <ShareSetDiagram {...props} />;
 }
 
 /** 1. Equal vs. unequal parts across bars, circles and squares. */
-function EqualPartsDiagram({ question, solved = false, onActivity }: {
-  question: GeneratedQuestion; solved?: boolean; onActivity?: () => void;
-}) {
+function EqualPartsDiagram({ question, suit, solved = false, onActivity }: SceneProps) {
   const clipId = useId();
   const shape = str(question, "shape", "bar");
   const parts = Math.max(2, num(question, "parts", num(question, "denominator", 4)));
@@ -112,19 +95,18 @@ function EqualPartsDiagram({ question, solved = false, onActivity }: {
         {segments.map(seg => {
           const active = selected.includes(seg.index);
           return <g key={seg.index} class="fraction-part-group" data-equal={equal ? "true" : "false"} data-part={seg.index} onClick={() => togglePart(seg.index)}>
-            <rect x={seg.x} y={y0} width={seg.w} height={height} fill={active ? NEUTRAL_ACTIVE : NEUTRAL_FILL} />
+            <rect x={seg.x} y={y0} width={seg.w} height={height} fill={active ? ART.neutralActive : ART.neutral} />
             {active && <text x={seg.x + seg.w / 2} y={y0 + height / 2 + 7} text-anchor="middle" class="fraction-part-num">{seg.index + 1}</text>}
           </g>;
         })}
-        {segments.slice(1).map(seg => <line key={`div-${seg.index}`} x1={seg.x} y1={y0} x2={seg.x} y2={y0 + height} stroke={LINE_STROKE} stroke-width="3.5" />)}
+        {segments.slice(1).map(seg => <line key={`div-${seg.index}`} x1={seg.x} y1={y0} x2={seg.x} y2={y0 + height} stroke={ART.stroke} stroke-width="3.5" />)}
       </g>
-      <rect x={x0} y={y0} width={width} height={height} rx="12" fill="none" stroke={LINE_STROKE} stroke-width="3.5" />
+      <rect x={x0} y={y0} width={width} height={height} rx="12" fill="none" stroke={ART.stroke} stroke-width="3.5" />
     </svg>;
   };
 
   const renderCircle = () => {
     const cx = 110, cy = 96, r = 78;
-    // For 2 unequal parts, use a classic off-center vertical chord cut.
     if (!equal && parts === 2) {
       const cutX = cx - 32;
       const pieces = [
@@ -138,13 +120,13 @@ function EqualPartsDiagram({ question, solved = false, onActivity }: {
           {pieces.map(piece => {
             const active = selected.includes(piece.index);
             return <g key={piece.index} class="fraction-part-group" data-equal="false" data-part={piece.index} onClick={() => togglePart(piece.index)}>
-              <rect x={piece.x} y={cy - r} width={piece.w} height={r * 2} fill={active ? NEUTRAL_ACTIVE : NEUTRAL_FILL} />
+              <rect x={piece.x} y={cy - r} width={piece.w} height={r * 2} fill={active ? ART.neutralActive : ART.neutral} />
               {active && <text x={piece.labelX} y={cy + 7} text-anchor="middle" class="fraction-part-num">{piece.index + 1}</text>}
             </g>;
           })}
-          <line x1={cutX} y1={cy - r} x2={cutX} y2={cy + r} stroke={LINE_STROKE} stroke-width="3.5" />
+          <line x1={cutX} y1={cy - r} x2={cutX} y2={cy + r} stroke={ART.stroke} stroke-width="3.5" />
         </g>
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke={LINE_STROKE} stroke-width="3.5" />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke={ART.stroke} stroke-width="3.5" />
       </svg>;
     }
 
@@ -164,7 +146,7 @@ function EqualPartsDiagram({ question, solved = false, onActivity }: {
         const active = selected.includes(wedge.index);
         const label = sliceLabelPoint(cx, cy, r, wedge.start, wedge.end);
         return <g key={wedge.index} class="fraction-part-group" data-equal={equal ? "true" : "false"} data-part={wedge.index} onClick={() => togglePart(wedge.index)}>
-          <path d={pieSlicePath(cx, cy, r, wedge.start, wedge.end)} fill={active ? NEUTRAL_ACTIVE : NEUTRAL_FILL} stroke={LINE_STROKE} stroke-width="3.5" stroke-linejoin="round" />
+          <path d={pieSlicePath(cx, cy, r, wedge.start, wedge.end)} fill={active ? ART.neutralActive : ART.neutral} stroke={ART.stroke} stroke-width="3.5" stroke-linejoin="round" />
           {active && <text x={label.x} y={label.y + 7} text-anchor="middle" class="fraction-part-num">{wedge.index + 1}</text>}
         </g>;
       })}
@@ -199,31 +181,29 @@ function EqualPartsDiagram({ question, solved = false, onActivity }: {
         {cells.map(cell => {
           const active = selected.includes(cell.index);
           return <g key={cell.index} class="fraction-part-group" data-equal={equal ? "true" : "false"} data-part={cell.index} onClick={() => togglePart(cell.index)}>
-            <rect x={cell.x} y={cell.y} width={cell.w} height={cell.h} fill={active ? NEUTRAL_ACTIVE : NEUTRAL_FILL} stroke={LINE_STROKE} stroke-width="3.5" />
+            <rect x={cell.x} y={cell.y} width={cell.w} height={cell.h} fill={active ? ART.neutralActive : ART.neutral} stroke={ART.stroke} stroke-width="3.5" />
             {active && <text x={cell.x + cell.w / 2} y={cell.y + cell.h / 2 + 7} text-anchor="middle" class="fraction-part-num">{cell.index + 1}</text>}
           </g>;
         })}
       </g>
-      <rect x={x0} y={y0} width={size} height={size} rx="10" fill="none" stroke={LINE_STROKE} stroke-width="3.5" />
+      <rect x={x0} y={y0} width={size} height={size} rx="10" fill="none" stroke={ART.stroke} stroke-width="3.5" />
     </svg>;
   };
 
-  return <div class="fraction-scene">
-    <div class="scene-caption">
-      <span class="scene-chip">Compare the parts</span>
-      <span>Are all {parts} parts the exact same size?</span>
-    </div>
+  return <SceneFrame
+    chip="Compare the parts"
+    caption={`Are all ${parts} parts the exact same size?`}
+    suit={suit}
+    solved={solved}
+    class="fraction-scene"
+    note={solved ? (equal ? `All ${parts} parts are equal.` : `These ${parts} parts are different sizes.`) : undefined}
+  >
     {shape === "circle" ? renderCircle() : shape === "square" ? renderSquare() : renderBar()}
-    {solved && <div class="fraction-solved-note">
-      {equal ? `All ${parts} parts are equal.` : `These ${parts} parts are different sizes.`}
-    </div>}
-  </div>;
+  </SceneFrame>;
 }
 
 /** 2. Shaded fraction of a shape (circle pie, fraction bar, or equal grid). */
-function ShadedShapeDiagram({ question, solved = false, onActivity }: {
-  question: GeneratedQuestion; solved?: boolean; onActivity?: () => void;
-}) {
+function ShadedShapeDiagram({ question, suit, solved = false, onActivity }: SceneProps) {
   const clipId = useId();
   const shape = str(question, "shape", "circle");
   const denominator = Math.max(2, num(question, "denominator", 2));
@@ -254,10 +234,10 @@ function ShadedShapeDiagram({ question, solved = false, onActivity }: {
         const badge = badgeNumber(index);
         return <g key={index} class="fraction-part-group" data-shaded={shaded ? "true" : "false"} onClick={() => toggleCount(index)}>
           <path d={pieSlicePath(cx, cy, r, start, end)}
-            fill={shaded ? SHADED_FILL : UNSHADED_FILL}
-            stroke={LINE_STROKE} stroke-width="3.5" stroke-linejoin="round" />
+            fill={shaded ? ART.gold : ART.surface}
+            stroke={ART.stroke} stroke-width="3.5" stroke-linejoin="round" />
           {badge !== null && <>
-            <circle cx={pos.x} cy={pos.y} r="14" fill={shaded ? "#fff9e6" : "#e9f3f8"} stroke={shaded ? SHADED_STROKE : LINE_STROKE} stroke-width="2" />
+            <circle cx={pos.x} cy={pos.y} r="14" fill={shaded ? ART.goldLight : ART.neutral} stroke={shaded ? ART.goldStroke : ART.stroke} stroke-width="2" />
             <text x={pos.x} y={pos.y + 6} text-anchor="middle" class="fraction-part-num">{badge}</text>
           </>}
         </g>;
@@ -277,19 +257,19 @@ function ShadedShapeDiagram({ question, solved = false, onActivity }: {
           const x = x0 + index * partW;
           const badge = badgeNumber(index);
           return <g key={index} class="fraction-part-group" data-shaded={shaded ? "true" : "false"} onClick={() => toggleCount(index)}>
-            <rect x={x} y={y0} width={partW} height={height} fill={shaded ? SHADED_FILL : UNSHADED_FILL} />
+            <rect x={x} y={y0} width={partW} height={height} fill={shaded ? ART.gold : ART.surface} />
             {badge !== null && <>
-              <circle cx={x + partW / 2} cy={y0 + height / 2} r="15" fill={shaded ? "#fff9e6" : "#e9f3f8"} stroke={shaded ? SHADED_STROKE : LINE_STROKE} stroke-width="2" />
+              <circle cx={x + partW / 2} cy={y0 + height / 2} r="15" fill={shaded ? ART.goldLight : ART.neutral} stroke={shaded ? ART.goldStroke : ART.stroke} stroke-width="2" />
               <text x={x + partW / 2} y={y0 + height / 2 + 6} text-anchor="middle" class="fraction-part-num">{badge}</text>
             </>}
           </g>;
         })}
         {Array.from({ length: denominator - 1 }, (_, index) => {
           const x = x0 + (index + 1) * partW;
-          return <line key={`div-${index}`} x1={x} y1={y0} x2={x} y2={y0 + height} stroke={LINE_STROKE} stroke-width="3.5" />;
+          return <line key={`div-${index}`} x1={x} y1={y0} x2={x} y2={y0 + height} stroke={ART.stroke} stroke-width="3.5" />;
         })}
       </g>
-      <rect x={x0} y={y0} width={width} height={height} rx="12" fill="none" stroke={LINE_STROKE} stroke-width="3.5" />
+      <rect x={x0} y={y0} width={width} height={height} rx="12" fill="none" stroke={ART.stroke} stroke-width="3.5" />
     </svg>;
   };
 
@@ -314,36 +294,36 @@ function ShadedShapeDiagram({ question, solved = false, onActivity }: {
           const y = y0 + row * cellH;
           const badge = badgeNumber(index);
           return <g key={index} class="fraction-part-group" data-shaded={shaded ? "true" : "false"} onClick={() => toggleCount(index)}>
-            <rect x={x} y={y} width={cellW} height={cellH} fill={shaded ? SHADED_FILL : UNSHADED_FILL} stroke={LINE_STROKE} stroke-width="3.5" />
+            <rect x={x} y={y} width={cellW} height={cellH} fill={shaded ? ART.gold : ART.surface} stroke={ART.stroke} stroke-width="3.5" />
             {badge !== null && <>
-              <circle cx={x + cellW / 2} cy={y + cellH / 2} r="15" fill={shaded ? "#fff9e6" : "#e9f3f8"} stroke={shaded ? SHADED_STROKE : LINE_STROKE} stroke-width="2" />
+              <circle cx={x + cellW / 2} cy={y + cellH / 2} r="15" fill={shaded ? ART.goldLight : ART.neutral} stroke={shaded ? ART.goldStroke : ART.stroke} stroke-width="2" />
               <text x={x + cellW / 2} y={y + cellH / 2 + 6} text-anchor="middle" class="fraction-part-num">{badge}</text>
             </>}
           </g>;
         })}
       </g>
-      <rect x={x0} y={y0} width={totalW} height={totalH} rx="10" fill="none" stroke={LINE_STROKE} stroke-width="3.5" />
+      <rect x={x0} y={y0} width={totalW} height={totalH} rx="10" fill="none" stroke={ART.stroke} stroke-width="3.5" />
     </svg>;
   };
 
-  return <div class="fraction-scene">
-    <div class="scene-caption">
-      <span class="scene-chip">Equal parts</span>
-      <span>Tap the parts to count them</span>
-    </div>
+  return <SceneFrame
+    chip="Equal parts"
+    caption="Tap the parts to count them"
+    suit={suit}
+    solved={solved}
+    class="fraction-scene"
+    note={solved
+      ? <><b>{numerator}</b> shaded out of <b>{denominator}</b> equal parts = <b>{numerator}/{denominator}</b></>
+      : counted.length > 0
+        ? <>Counted <b>{counted.length}</b> {counted.length === 1 ? "part" : "parts"} — tap again to clear</>
+        : <>Top number: shaded parts · Bottom number: all equal parts</>}
+  >
     {shape === "bar" ? renderBar() : shape === "grid" && (denominator === 2 || denominator === 4) ? renderGrid() : renderCircle()}
-    <div class="fraction-solved-note">
-      {solved
-        ? <><b>{numerator}</b> shaded out of <b>{denominator}</b> equal parts = <b>{numerator}/{denominator}</b></>
-        : counted.length > 0
-          ? <>Counted <b>{counted.length}</b> {counted.length === 1 ? "part" : "parts"} — tap again to clear</>
-          : <>Top number: shaded parts · Bottom number: all equal parts</>}
-    </div>
-  </div>;
+  </SceneFrame>;
 }
 
-/** 3. Interactive sharing of counters into equal groups (fr.sets). */
-function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false, onActivity, onStep, onWorkComplete }: FractionSceneProps) {
+/** 3. Interactive sharing of SuitTokens into equal groups (fr.sets). */
+function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false, onActivity, onStep, onWorkComplete }: SceneProps) {
   const denominator = Math.max(2, num(question, "denominator", 2));
   const whole = Math.max(denominator, num(question, "whole", 8));
   const perGroup = Math.max(1, Math.floor(whole / denominator));
@@ -362,7 +342,6 @@ function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false
     if (next >= perGroup) onWorkComplete?.();
   };
 
-  // Finish sharing smoothly when solved so he sees the completed equal groups.
   useEffect(() => {
     if (!solved || complete) return;
     const remaining = perGroup - rounds;
@@ -374,7 +353,6 @@ function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false
     return () => window.clearTimeout(timer);
   }, [solved, complete, rounds, perGroup, reducedMotion]);
 
-  // Support Space key just like COUNT / GROUP in QuestionScene.
   useEffect(() => {
     if (solved) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -385,6 +363,7 @@ function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [solved, perGroup, question.key]);
 
+  const theme = SUIT_THEME[suit];
   const remaining = Math.max(0, whole - rounds * denominator);
   const width = 660;
   const trayGap = 16;
@@ -394,29 +373,43 @@ function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false
   const trayH = 112;
   const highlightW = numerator * trayW + (numerator - 1) * trayGap;
 
-  // Layout for unshared tokens at the top (max 10 per row).
   const topCols = Math.min(10, Math.max(1, whole));
-  const topSpacing = Math.min(38, 520 / topCols);
-
-  // Layout for tokens inside each equal tray.
+  const topSpacing = Math.min(40, 520 / topCols);
   const groupCols = perGroup <= 4 ? 2 : 3;
   const groupRows = Math.ceil(perGroup / groupCols);
 
-  const tokenFill = (highlighted: boolean) => highlighted ? SHADED_FILL : SECOND_FILL;
-  const tokenStroke = (highlighted: boolean) => highlighted ? SHADED_STROKE : SECOND_STROKE;
+  const statusText = complete
+    ? (numerator === 1
+      ? `All shared! Count the ${theme.tokenPlural} in the gold group.`
+      : `All shared! Count the ${theme.tokenPlural} in the ${numerator} gold groups.`)
+    : rounds === 0
+      ? `Need help? Press SHARE to give 1 to each of the ${denominator} groups.`
+      : `${remaining} left to share`;
 
-  return <div class={`fraction-scene fraction-sets suit-${suit}`}>
-    <div class="scene-caption">
-      <span class="scene-chip">Share equally</span>
-      <span>{whole} counters · {denominator} equal groups</span>
-    </div>
+  return <SceneFrame
+    chip="Share equally"
+    caption={`${whole} ${theme.tokenPlural} · ${denominator} equal groups`}
+    suit={suit}
+    solved={solved}
+    class="fraction-scene fraction-sets"
+    action={{
+      label: "SHARE",
+      icon: "↓",
+      done: complete,
+      onTrigger: dealRound,
+      status: statusText,
+    }}
+    note={solved
+      ? <>Each equal group has <b>{perGroup}</b>.{numerator > 1 ? <> <b>{numerator}</b> groups have <b>{numerator * perGroup}</b>.</> : null}</>
+      : undefined}
+  >
     <svg class="fraction-svg fraction-sets-svg" viewBox={`0 0 ${width} 260`} role="img"
-      aria-label={`${whole} counters shared into ${denominator} equal groups, ${rounds} in each group so far`}>
+      aria-label={`${whole} ${theme.tokenPlural} shared into ${denominator} equal groups, ${rounds} in each group so far`}>
       {/* Top unshared pile */}
       <g class={complete ? "" : "fraction-part-group"} onClick={dealRound}>
         <rect x="44" y="8" width={width - 88} height="74" rx="16"
-          fill={remaining ? "#ffffff" : "#f2f8f5"}
-          stroke={remaining ? "#9cb7c4" : "#87b999"} stroke-width="2.5" stroke-dasharray={remaining ? "6 5" : undefined} />
+          fill={remaining ? ART.surface : ART.mintLight}
+          stroke={remaining ? "#9cb7c4" : ART.mintStroke} stroke-width="2.5" stroke-dasharray={remaining ? "6 5" : undefined} />
         {remaining > 0
           ? Array.from({ length: remaining }, (_, index) => {
             const row = Math.floor(index / topCols);
@@ -424,17 +417,16 @@ function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false
             const rowCount = Math.min(topCols, remaining - row * topCols);
             const startX = width / 2 - ((rowCount - 1) * topSpacing) / 2;
             const cy = remaining > topCols ? (row === 0 ? 31 : 59) : 45;
-            return <circle key={index} cx={startX + col * topSpacing} cy={cy} r="11"
-              fill={SECOND_FILL} stroke={SECOND_STROKE} stroke-width="2.5" />;
+            return <SuitToken key={index} suit={suit} cx={startX + col * topSpacing} cy={cy} r={11.5} tone="primary" />;
           })
-          : <text x={width / 2} y="51" text-anchor="middle" class="fraction-tray-done">All {whole} counters shared equally!</text>}
+          : <text x={width / 2} y="51" text-anchor="middle" class="fraction-tray-done">All {whole} {theme.tokenPlural} shared equally!</text>}
       </g>
 
       {/* Highlight bracket over the target numerator group(s) */}
       <g>
         <rect x={trayPad - 5} y={trayY - 26} width={highlightW + 10} height={trayH + 34} rx="18"
-          fill="rgba(240, 190, 79, 0.14)" stroke={SHADED_STROKE} stroke-width="2.5" stroke-dasharray="6 4" />
-        <rect x={trayPad + highlightW / 2 - 58} y={trayY - 36} width="116" height="22" rx="11" fill={SHADED_FILL} stroke={SHADED_STROKE} stroke-width="2" />
+          fill="rgba(240, 190, 79, 0.14)" stroke={ART.goldStroke} stroke-width="2.5" stroke-dasharray="6 4" />
+        <rect x={trayPad + highlightW / 2 - 58} y={trayY - 36} width="116" height="22" rx="11" fill={ART.gold} stroke={ART.goldStroke} stroke-width="2" />
         <text x={trayPad + highlightW / 2} y={trayY - 21} text-anchor="middle" class="fraction-highlight-tag">{fractionWord(numerator, denominator)}</text>
       </g>
 
@@ -446,45 +438,25 @@ function ShareSetDiagram({ question, suit, solved = false, reducedMotion = false
         const cellH = (trayH - 28) / Math.max(1, groupRows);
         return <g key={groupIndex} data-group={groupIndex} data-target={isTarget ? "true" : "false"}>
           <rect x={gx} y={trayY} width={trayW} height={trayH} rx="14"
-            fill={isTarget ? "#fffdf5" : "#ffffff"}
-            stroke={isTarget ? SHADED_STROKE : "#7ea0b0"} stroke-width={isTarget ? "3" : "2.5"} />
+            fill={isTarget ? ART.goldLight : ART.surface}
+            stroke={isTarget ? ART.goldStroke : "#7ea0b0"} stroke-width={isTarget ? "3" : "2.5"} />
           {Array.from({ length: rounds }, (_, itemIndex) => {
             const col = itemIndex % groupCols;
             const row = Math.floor(itemIndex / groupCols);
             const cx = gx + 12 + col * cellW + cellW / 2;
             const cy = trayY + 14 + row * cellH + cellH / 2;
-            return <circle key={itemIndex} cx={cx} cy={cy} r={perGroup > 6 ? 9 : 11}
-              fill={tokenFill(isTarget)} stroke={tokenStroke(isTarget)} stroke-width="2.5" data-token="shared" />;
+            return <SuitToken key={itemIndex} suit={suit} cx={cx} cy={cy} r={perGroup > 6 ? 9 : 11}
+              tone={isTarget ? "highlight" : "primary"} dataToken="shared" />;
           })}
           {solved && <text x={gx + trayW / 2} y={trayY + trayH - 6} text-anchor="middle" class="fraction-group-count">{rounds}</text>}
         </g>;
       })}
     </svg>
-
-    {!solved && <div class="work-control">
-      {!complete && <button class="work-button" onMouseDown={event => event.preventDefault()} onClick={dealRound}>
-        SHARE <span aria-hidden="true">↓</span>
-      </button>}
-      <p aria-live="polite">
-        {complete
-          ? (numerator === 1
-            ? "All shared! Count the counters in the gold group."
-            : `All shared! Count the counters in the ${numerator} gold groups.`)
-          : rounds === 0
-            ? `Need help? Press SHARE to give 1 to each of the ${denominator} groups.`
-            : `${remaining} left to share`}
-      </p>
-    </div>}
-    {solved && <div class="fraction-solved-note">
-      Each equal group has <b>{perGroup}</b>.{numerator > 1 ? <> <b>{numerator}</b> groups have <b>{numerator * perGroup}</b>.</> : null}
-    </div>}
-  </div>;
+  </SceneFrame>;
 }
 
 /** 4. Equivalent fractions side-by-side Fraction Wall (fr.equivalent). */
-function EquivalentWallDiagram({ question, solved = false }: {
-  question: GeneratedQuestion; solved?: boolean;
-}) {
+function EquivalentWallDiagram({ question, suit, solved = false }: SceneProps) {
   const clipTop = useId();
   const clipBottom = useId();
   const n1 = Math.max(1, num(question, "numerator", num(question, "part", 2)));
@@ -508,57 +480,54 @@ function EquivalentWallDiagram({ question, solved = false }: {
       <g clip-path={`url(#${clipId})`}>
         {Array.from({ length: denominator }, (_, index) => (
           <rect key={index} x={barX + index * partW} y={y} width={partW} height={barH}
-            fill={index < numerator ? fill : UNSHADED_FILL}
+            fill={index < numerator ? fill : ART.surface}
             data-shaded={index < numerator ? "true" : "false"} />
         ))}
         {Array.from({ length: denominator - 1 }, (_, index) => {
           const x = barX + (index + 1) * partW;
-          return <line key={`d-${index}`} x1={x} y1={y} x2={x} y2={y + barH} stroke={LINE_STROKE} stroke-width="3" />;
+          return <line key={`d-${index}`} x1={x} y1={y} x2={x} y2={y + barH} stroke={ART.stroke} stroke-width="3" />;
         })}
       </g>
-      <rect x={barX} y={y} width={barW} height={barH} rx="10" fill="none" stroke={LINE_STROKE} stroke-width="3.5" />
+      <rect x={barX} y={y} width={barW} height={barH} rx="10" fill="none" stroke={ART.stroke} stroke-width="3.5" />
     </g>;
   };
 
-  return <div class="fraction-scene">
-    <div class="scene-caption">
-      <span class="scene-chip">Fraction wall</span>
-      <span>Both whole bars are the exact same length</span>
-    </div>
+  return <SceneFrame
+    chip="Fraction wall"
+    caption="Both whole bars are the exact same length"
+    suit={suit}
+    solved={solved}
+    class="fraction-scene"
+    note={solved
+      ? (same ? "The shaded edges line up! Both fractions cover the same amount." : "The shaded edges do not line up. They are different amounts.")
+      : "Follow the dotted line to see if both shaded parts end in the same place."}
+  >
     <svg class="fraction-svg fraction-wall-svg" viewBox="0 0 540 196" role="img"
       aria-label={`Fraction wall comparing ${n1}/${d1} and ${n2}/${d2}`}>
-      <StackedFractionSvg x={46} y={topY + barH / 2} numerator={n1} denominator={d1} color={SHADED_STROKE} />
-      {renderWallBar(topY, n1, d1, SHADED_FILL, clipTop)}
+      <StackedFractionSvg x={46} y={topY + barH / 2} numerator={n1} denominator={d1} color={ART.goldStroke} />
+      {renderWallBar(topY, n1, d1, ART.gold, clipTop)}
 
-      <StackedFractionSvg x={46} y={bottomY + barH / 2} numerator={n2} denominator={d2} color={SECOND_STROKE} />
-      {renderWallBar(bottomY, n2, d2, SECOND_FILL, clipBottom)}
+      <StackedFractionSvg x={46} y={bottomY + barH / 2} numerator={n2} denominator={d2} color={ART.skyStroke} />
+      {renderWallBar(bottomY, n2, d2, ART.sky, clipBottom)}
 
-      {/* Vertical alignment guide line(s) — neutral before solving so colour never gives the answer away */}
       <line class="fraction-guide-line" x1={edge1} y1={topY - 8} x2={edge1} y2={bottomY + barH + 8}
-        stroke={solved && same ? "#2f7d4d" : LINE_STROKE} stroke-width="3" stroke-dasharray="6 5" />
-      <circle cx={edge1} cy={topY + barH} r="5" fill={SHADED_STROKE} />
+        stroke={solved && same ? ART.mintStroke : ART.stroke} stroke-width="3" stroke-dasharray="6 5" />
+      <circle cx={edge1} cy={topY + barH} r="5" fill={ART.goldStroke} />
 
       {!same && <>
         <line class="fraction-guide-line" x1={edge2} y1={topY + barH + 10} x2={edge2} y2={bottomY + barH + 8}
-          stroke={SECOND_STROKE} stroke-width="3" stroke-dasharray="6 5" />
-        <circle cx={edge2} cy={bottomY} r="5" fill={SECOND_STROKE} />
+          stroke={ART.skyStroke} stroke-width="3" stroke-dasharray="6 5" />
+        <circle cx={edge2} cy={bottomY} r="5" fill={ART.skyStroke} />
         <line x1={Math.min(edge1, edge2) + 4} y1={topY + barH + 17} x2={Math.max(edge1, edge2) - 4} y2={topY + barH + 17}
-          stroke={LINE_STROKE} stroke-width="2.5" stroke-linecap="round" />
+          stroke={ART.stroke} stroke-width="2.5" stroke-linecap="round" />
       </>}
-      {same && <circle cx={edge2} cy={bottomY} r="5" fill={solved ? "#2f7d4d" : SECOND_STROKE} />}
+      {same && <circle cx={edge2} cy={bottomY} r="5" fill={solved ? ART.mintStroke : ART.skyStroke} />}
     </svg>
-    <div class="fraction-solved-note">
-      {solved
-        ? (same ? "The shaded edges line up! Both fractions cover the same amount." : "The shaded edges do not line up. They are different amounts.")
-        : "Follow the dotted line to see if both shaded parts end in the same place."}
-    </div>
-  </div>;
+  </SceneFrame>;
 }
 
 /** 5. Fractions on a 0-to-1 number line with the hero (fr.line). */
-function FractionNumberLineDiagram({ question, suit, solved = false }: {
-  question: GeneratedQuestion; suit: SuitId; solved?: boolean;
-}) {
+function FractionNumberLineDiagram({ question, suit, solved = false }: SceneProps) {
   const denominator = Math.max(2, num(question, "denominator", 4));
   const numerator = Math.max(1, Math.min(denominator - 1, num(question, "numerator", num(question, "part", 1))));
   const width = 660;
@@ -568,45 +537,44 @@ function FractionNumberLineDiagram({ question, suit, solved = false }: {
   const posX = (step: number) => margin + (step / denominator) * span;
   const targetX = posX(numerator);
 
-  return <div class="fraction-scene">
-    <div class="scene-caption">
-      <span class="scene-chip">Fraction line</span>
-      <span>{denominator} equal jumps from 0 to 1</span>
-    </div>
+  return <SceneFrame
+    chip="Fraction line"
+    caption={`${denominator} equal jumps from 0 to 1`}
+    suit={suit}
+    solved={solved}
+    showHero={false}
+    class="fraction-scene"
+  >
     <svg class="fraction-svg fraction-line-svg" viewBox={`0 0 ${width} 196`} role="img"
       aria-label={`Number line from 0 to 1 split into ${denominator} equal parts with ${HERO_NAMES[suit]} at ${numerator}/${denominator}`}>
-      {/* Base track and shaded progress */}
-      <line x1={margin} y1={lineY} x2={width - margin} y2={lineY} stroke="#bed0d8" stroke-width="10" stroke-linecap="round" />
-      <line x1={margin} y1={lineY} x2={targetX} y2={lineY} stroke={SHADED_FILL} stroke-width="10" stroke-linecap="round" />
+      <line x1={margin} y1={lineY} x2={width - margin} y2={lineY} stroke={ART.track} stroke-width="10" stroke-linecap="round" />
+      <line x1={margin} y1={lineY} x2={targetX} y2={lineY} stroke={ART.gold} stroke-width="10" stroke-linecap="round" />
 
-      {/* Equal jump arcs from 0 to target */}
       {Array.from({ length: numerator }, (_, index) => {
         const from = posX(index);
         const to = posX(index + 1);
         return <path key={`hop-${index}`} d={`M ${from} ${lineY - 8} Q ${(from + to) / 2} ${lineY - 56} ${to} ${lineY - 8}`}
-          fill="none" stroke={SHADED_STROKE} stroke-width="3.5" stroke-dasharray="6 5" stroke-linecap="round" />;
+          fill="none" stroke={ART.goldStroke} stroke-width="3.5" stroke-dasharray="6 5" stroke-linecap="round" />;
       })}
 
-      {/* Tick marks */}
       {Array.from({ length: denominator + 1 }, (_, index) => {
         const x = posX(index);
         const isEnd = index === 0 || index === denominator;
         const isTarget = index === numerator;
         return <g key={index}>
           <line x1={x} y1={lineY - (isEnd ? 15 : 11)} x2={x} y2={lineY + (isEnd ? 15 : 11)}
-            stroke={LINE_STROKE} stroke-width={isEnd ? "4" : "3"} stroke-linecap="round" />
+            stroke={ART.stroke} stroke-width={isEnd ? "4" : "3"} stroke-linecap="round" />
           <circle cx={x} cy={lineY} r={isTarget ? 11 : isEnd ? 8 : 6}
-            fill={isTarget ? SHADED_FILL : "#ffffff"} stroke={isTarget ? SHADED_STROKE : LINE_STROKE} stroke-width="3" />
+            fill={isTarget ? ART.gold : ART.surface} stroke={isTarget ? ART.goldStroke : ART.stroke} stroke-width="3" />
           {isEnd && <text x={x} y={lineY + 42} text-anchor="middle" class="svg-label">{index === 0 ? "0" : "1"}</text>}
           {!isEnd && isTarget && !solved && <text x={x} y={lineY + 44} text-anchor="middle" class="fraction-line-unknown">?</text>}
-          {!isEnd && solved && <StackedFractionSvg x={x} y={lineY + 42} numerator={index} denominator={denominator} color={isTarget ? SHADED_STROKE : "#5d7784"} />}
+          {!isEnd && solved && <StackedFractionSvg x={x} y={lineY + 42} numerator={index} denominator={denominator} color={isTarget ? ART.goldStroke : "#5d7784"} />}
         </g>;
       })}
 
-      {/* Hero standing on the target fraction */}
       <g transform={`translate(${targetX - 31} 36) scale(1.22)`}>
         <HeroCharacter suit={suit} />
       </g>
     </svg>
-  </div>;
+  </SceneFrame>;
 }
