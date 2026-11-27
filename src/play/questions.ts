@@ -140,5 +140,25 @@ export function makeQuestion(activityId: ActivityId, settings: PlaySettings, rng
       : CAPPED.has(activityId) ? settings.maxNumber : Number(question.answer) + 10;
     question = { ...question, answerKind: "choice", choices: numberChoices(Number(question.answer), limit, rng) };
   }
+  if (question.answerKind === "choice" && question.choices && !hasNaturalOrder(question.choices)) {
+    question = { ...question, choices: shuffled(question.choices, rng) };
+  }
   return question;
+}
+
+/** Choice sets that read best in a fixed order (Yes/No, <, =, >, compass directions…). */
+const NATURAL_ORDERS = [["Yes", "No"], ["Right", "Bug"], ["<", "=", ">"], ["odd", "even"], ["is", "are"], ["all", "some", "none"], ["up", "right", "down", "left"]];
+
+function hasNaturalOrder(choices: string[]): boolean {
+  return NATURAL_ORDERS.some(order => order.length === choices.length && order.every((item, index) => choices[index] === item));
+}
+
+/** Fisher–Yates shuffle, so the right answer never sits in a predictable spot. */
+function shuffled<T>(items: T[], rng: Rng): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
+  }
+  return copy;
 }

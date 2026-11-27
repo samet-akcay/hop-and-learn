@@ -162,7 +162,9 @@ function GameScreen({ activityId, data, voice, sound, onStar, onHome }: {
         : (question.answerKind === "choice" && question.choices
           ? <div class="big-choices" role="group" aria-label="Choose an answer">{question.choices.map(choice => {
             const fractionMatch = /^(\d+)\/(\d+)$/.exec(choice);
-            return <button key={choice} class={`big-choice ${choice.length > 5 ? "wordy" : ""} ${fractionMatch ? "fraction-choice" : ""}`} aria-label={fractionMatch ? choice : undefined} disabled={wrong.includes(choice)} onClick={() => submit(choice)}>
+            // One wordy choice makes them all wordy, so every button is the same size.
+            const wordy = question.choices!.some(option => option.length > 5 && !/^\d+\/\d+$/.test(option));
+            return <button key={choice} class={`big-choice ${wordy ? "wordy" : ""} ${fractionMatch ? "fraction-choice" : ""}`} aria-label={fractionMatch ? choice : undefined} disabled={wrong.includes(choice)} onClick={() => submit(choice)}>
               {fractionMatch
                 ? <span class="stacked-fraction" aria-hidden="true"><span>{fractionMatch[1]}</span><i /><span>{fractionMatch[2]}</span></span>
                 : <>{choice}{question.unit === "p" || question.unit === "cm" ? <small>{question.unit}</small> : null}</>}

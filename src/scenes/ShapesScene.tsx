@@ -8,8 +8,10 @@ const str = (q: SceneProps["question"], key: string, fallback = "") => String(q.
 const list = (q: SceneProps["question"], key: string) => Array.isArray(q.data[key]) ? q.data[key] as string[] : [];
 
 function polygonPoints(cx: number, cy: number, r: number, sides: number): { x: number; y: number }[] {
+  // Even-sided shapes get a half-step turn so they sit on a flat side (a square, not a diamond).
+  const offset = sides % 2 === 0 ? Math.PI / sides : 0;
   return Array.from({ length: sides }, (_, i) => {
-    const angle = (2 * Math.PI * i) / sides - Math.PI / 2;
+    const angle = (2 * Math.PI * i) / sides - Math.PI / 2 + offset;
     return { x: +(cx + r * Math.cos(angle)).toFixed(2), y: +(cy + r * Math.sin(angle)).toFixed(2) };
   });
 }

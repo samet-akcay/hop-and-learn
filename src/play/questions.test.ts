@@ -78,6 +78,21 @@ describe("Hop & Learn questions", () => {
     }
   });
 
+  it("never leaves the right answer in a predictable position, but keeps natural orders like Yes/No", () => {
+    const positions = new Set<number>();
+    for (let i = 0; i < 80; i++) {
+      const question = makeQuestion("fixit", DEFAULT_PLAY_SETTINGS, makeRng(i * 7 + 3));
+      expect(question.choices).toContain(question.answer);
+      positions.add(question.choices!.indexOf(question.answer));
+    }
+    expect(positions.size).toBeGreaterThan(1);
+
+    for (let i = 0; i < 40; i++) {
+      const question = makeQuestion("spotbug", DEFAULT_PLAY_SETTINGS, makeRng(i));
+      expect(question.choices).toEqual(["Right", "Bug"]);
+    }
+  });
+
   it("respects maxGroups in Times Tables and fractionFocus in Fractions", () => {
     const smallTimes: PlaySettings = { ...DEFAULT_PLAY_SETTINGS, maxGroups: 5 };
     for (let i = 0; i < 60; i++) {
