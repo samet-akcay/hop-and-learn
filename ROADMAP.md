@@ -46,9 +46,9 @@ Visual bridges between maths, patterns, and word problems:
 
 ---
 
-## Phase 5 — Words & Language (Illustrated Scenes)
+## Phase 5 — Words & Language (Illustrated Scenes) *(Done)*
 Replace the `◇` text placeholders with proper visual SVG scenes and Colourful Semantics integration:
-- [ ] **Sentence Builder & Fix the Sentence** — illustrated mini-scenes that act out the sentence built in the coloured slots (`Who / Doing / What / Where`)
-- [ ] **Sounds, Alien Words & Tricky Words** — polished light-mode phonics sound buttons, blending hop-bar, and custom alien SVG generator (each decoded alien word hatches a unique SVG alien)
-- [ ] **Listen and Do, Read and Match, Story Maker & Word Sort** — reusable SVG scene props (objects + positions: *in, on, under, next to, between*) replacing all placeholder diamonds
-- [ ] **Typing & Letter of the Day** — animated stroke-order SVG guides and responsive on-screen keyboard highlights
+- [x] **Sentence Builder, Fix the Sentence & Zib's Mix-ups** (`SentenceScene.tsx`) — Zib the Alien speech bubble + bright Colourful Semantics slots (`Who / Doing / What / Where / When`)
+- [x] **Sounds, Alien Words & Tricky Words** (`PhonicsScene.tsx`) — light-mode phonics sound buttons (`●` dots & `━━` digraph bars), blending arrow, procedural SVG alien hatcher, and tricky-word flashcards
+- [x] **Listen and Do, Read and Match, Story Maker & Word Sort** (`WordsPictureScene.tsx`) — real illustrated SVG scene cards (positions, quantities, objects, and First/Next/Last story strips) replacing all placeholder diamonds
+- [x] **Typing & Letter of the Day** (`WritingScene.tsx`) — clean typing display card and sky/midline/grass handwriting guide SVG

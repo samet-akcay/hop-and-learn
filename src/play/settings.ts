@@ -20,7 +20,7 @@ export interface PlaySettings {
   fractionFocus: FractionFocus;
   /** How hard the other games are. */
   difficulty: Difficulty;
-  /** Show work-in-progress games that have not yet been rebuilt on the new visual kit. */
+  /** Show all 31 games on the menu, or focus on just pinned "My games". */
   showAllGames: boolean;
   hiddenGames: ActivityId[];
   speech: boolean;
@@ -45,7 +45,7 @@ export const DEFAULT_PLAY_SETTINGS: PlaySettings = {
   maxGroups: 10,
   fractionFocus: "sharing",
   difficulty: "easy",
-  showAllGames: false,
+  showAllGames: true,
   hiddenGames: [],
   speech: true,
   sound: true,

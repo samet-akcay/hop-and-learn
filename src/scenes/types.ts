@@ -16,4 +16,6 @@ export interface SceneProps {
   onActivity?: () => void;
   onStep?: (steps: number) => void;
   onWorkComplete?: () => void;
+  onPlayPhoneme?: (grapheme: string, word?: string) => void;
+  hasPhoneme?: (grapheme: string, word?: string) => boolean;
 }

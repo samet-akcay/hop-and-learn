@@ -209,6 +209,50 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .steps-card-done .steps-badge { background: #57b377; border-color: #2f7448; color: #fff; }
 .steps-card b { font-size: 14px; line-height: 1.3; }
 .steps-arrow { font-size: 22px; font-weight: 900; }
+.zib-speech-row { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 12px auto; max-width: 680px; }
+.zib-avatar-svg { flex: none; width: 74px; height: 86px; }
+.zib-bubble { flex: 1; padding: 16px 22px; border: 3px solid #2c4a58; border-radius: 20px; background: #fff; text-align: left; box-shadow: 0 6px 16px rgba(36,64,79,.08); }
+.zib-bubble-fixed { border-color: #2f7448; background: #ebf8ef; }
+.zib-bubble p { margin: 0; color: var(--ink-strong); font-size: 24px; font-weight: 800; line-height: 1.3; }
+.kit-slots { display: grid; gap: 10px; margin: 14px auto 4px; max-width: 720px; }
+.kit-slot { display: grid; gap: 4px; padding: 12px 10px; border: 2.5px solid; border-radius: 14px; text-align: center; }
+.kit-slot small { font-size: 11px; font-weight: 900; letter-spacing: .09em; }
+.kit-slot b { font-size: 16px; font-weight: 850; }
+.word-picture-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin: 12px auto; }
+.word-picture-card { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 148px; max-width: 210px; padding: 12px 14px; border: 2.5px solid #bdd0d9; border-radius: 18px; background: #fff; color: var(--ink-strong); }
+.word-picture-card b { font-size: 14px; line-height: 1.25; }
+.word-card-hit { border-color: #2f7448; background: #ebf8ef; }
+.word-card-svg { width: 110px; height: 84px; display: block; }
+.word-clue-card { max-width: 620px; margin: 14px auto; padding: 16px 22px; border: 2.5px solid #bdd0d9; border-radius: 18px; background: #fff; }
+.word-clue-card p { margin: 0; color: var(--ink-strong); font-size: 22px; font-weight: 800; line-height: 1.35; }
+.story-comic-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 14px auto; }
+.story-comic-card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: 220px; min-width: 170px; padding: 14px 16px; border: 2.5px solid #bdd0d9; border-radius: 16px; background: #fff; color: var(--ink-strong); text-align: left; }
+.story-comic-done { border-color: #2f7448; background: #ebf8ef; }
+.story-comic-tag { padding: 3px 10px; border-radius: 999px; background: #fff7df; border: 1.5px solid #9b6d0d; color: #9b6d0d; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; }
+.story-comic-done .story-comic-tag { background: #57b377; border-color: #2f7448; color: #fff; }
+.story-comic-card b { font-size: 15px; line-height: 1.3; }
+.alien-hatch-svg { width: min(100%, 190px); height: auto; }
+.phonics-word-display { margin: 4px 0 8px; color: var(--ink-strong); font-size: 32px; font-weight: 900; letter-spacing: .04em; }
+.kit-sound-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 14px auto 6px; }
+.kit-sound-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 58px; min-height: 68px; padding: 8px 14px; border: 2.5px solid #2c6f8e; border-bottom-width: 5px; border-radius: 14px; background: #fff; color: var(--ink-strong); cursor: pointer; }
+.kit-sound-tile b { font-size: 26px; font-weight: 900; line-height: 1; }
+.kit-sound-tile:disabled { opacity: 1; cursor: default; }
+.kit-sound-blank { border-style: dashed; border-color: #9b6d0d; background: #fff7df; color: #9b6d0d; }
+.sound-dot { width: 10px; height: 10px; border-radius: 50%; background: #9b6d0d; }
+.sound-bar { width: 32px; height: 6px; border-radius: 999px; background: #9b6d0d; }
+.blend-arrow-svg { width: min(100%, 280px); height: auto; margin-top: 2px; }
+.tricky-flashcard, .typing-screen { display: inline-flex; align-items: center; justify-content: center; min-width: 240px; min-height: 92px; margin: 12px auto; padding: 16px 34px; border: 3px solid #2c4a58; border-radius: 22px; background: #fff; box-shadow: 0 8px 20px rgba(36,64,79,.08); }
+.tricky-flashcard b, .typing-screen b { color: var(--ink-strong); font-size: 42px; font-weight: 900; letter-spacing: .02em; }
+.tricky-done, .typing-screen-done { border-color: #2f7448; background: #ebf8ef; }
+.tricky-listen { color: var(--muted); font-size: 20px; font-weight: 800; }
+.suffix-join { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin: 16px auto; }
+.suffix-root, .suffix-end, .suffix-out { padding: 12px 20px; border: 2.5px solid; border-radius: 16px; font-size: 24px; font-weight: 900; }
+.suffix-root { border-color: #2c6f8e; background: #e8f5fb; color: #1d3946; }
+.suffix-end { border-color: #9b6d0d; background: #fff7df; color: #9b6d0d; }
+.suffix-out { border-style: dashed; border-color: #9b6d0d; background: #fff; color: #9b6d0d; }
+.suffix-done { border-style: solid; border-color: #2f7448; background: #ebf8ef; color: #2f7448; }
+.suffix-plus { font-size: 24px; font-weight: 900; color: var(--muted); }
+.letter-guide-svg { width: min(100%, 360px); height: auto; }
 .turn-pointer { transition: transform .35s cubic-bezier(.2,1.3,.4,1); }
 .placevalue-svg { width: min(100%, 640px); height: auto; }
 .compare-svg { width: min(100%, 560px); height: auto; }

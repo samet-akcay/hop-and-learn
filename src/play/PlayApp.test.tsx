@@ -25,19 +25,19 @@ async function hopToTheEnd(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("Hop & Learn", () => {
-  it("shows the ready games by default, and reveals all games when enabled in settings", () => {
+  it("shows all 31 rebuilt games by default, and focuses on pinned games when 'My games only' is chosen", () => {
     render(<PlayApp initialData={quietData()} />);
     const cards = [...document.querySelectorAll(".my-games .game-card b")].map(item => item.textContent);
     expect(cards).toEqual(["Number Line", "Number Bonds", "Times Tables", "Fractions"]);
     expect(screen.getByRole("button", { name: "Money", exact: true })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Time", exact: true })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Sentence Builder", exact: true })).toBeNull();
+    expect(screen.getByRole("button", { name: "Sentence Builder", exact: true })).toBeTruthy();
     cleanup();
 
-    const allData = quietData();
-    allData.settings.showAllGames = true;
-    render(<PlayApp initialData={allData} />);
-    expect(screen.getByRole("button", { name: "Sentence Builder", exact: true })).toBeTruthy();
+    const focused = quietData();
+    focused.settings.showAllGames = false;
+    render(<PlayApp initialData={focused} />);
+    expect(screen.queryByRole("button", { name: "Sentence Builder", exact: true })).toBeNull();
+    expect(screen.getByRole("button", { name: "Fractions", exact: true })).toBeTruthy();
   });
 
   it("shows three big answers straight away, so he can answer without hopping", async () => {
@@ -100,7 +100,6 @@ describe("Hop & Learn", () => {
     fireEvent.pointerDown(gear);
     vi.advanceTimersByTime(2000);
     expect(await screen.findByRole("dialog", { name: "Grown-up corner" })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "All 31 games" }));
     fireEvent.click(screen.getByRole("button", { name: "✓ Money" }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     expect(screen.queryByRole("button", { name: "Money", exact: true })).toBeNull();

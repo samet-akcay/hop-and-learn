@@ -70,14 +70,9 @@ test("fractions shows clear SVG diagrams and earns a star", async ({ page }) => 
   expect(box && box.width > 120 && box.height > 60).toBeTruthy();
 });
 
-test("every game on the menu opens and shows a question when all games are shown", async ({ page }) => {
+test("every game on the menu opens and shows a question", async ({ page }) => {
   await quiet(page);
   await page.goto("/");
-  await expect(page.locator(".game-card b")).toHaveCount(19);
-  await page.keyboard.press("Control+Shift+G");
-  const corner = page.getByRole("dialog", { name: "Grown-up corner" });
-  await corner.getByRole("button", { name: "All 31 games" }).click();
-  await corner.getByRole("button", { name: "Done" }).click();
   const titles = await page.locator(".game-card b").allInnerTexts();
   expect(titles.length).toBe(31);
   for (const title of titles) {

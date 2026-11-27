@@ -9,7 +9,6 @@ import { speak, stopSpeaking } from "../core/speech";
 import { DEFAULT_SETTINGS, type ActivityId, type AreaId, type GeneratedQuestion } from "../core/types";
 import { GameIcon } from "../kit/GameIcon";
 import { SUIT_THEME } from "../kit/theme";
-import { POLISHED_ACTIVITIES } from "../scenes/registry";
 import { makeQuestion } from "./questions";
 import { DEFAULT_PLAY_SETTINGS, freshPlayData, savePlayData, type MaxNumber, type PlayData, type PlaySettings } from "./settings";
 
@@ -67,7 +66,7 @@ export function PlayApp({ initialData }: { initialData: PlayData }) {
 function Menu({ data, onPlay, onHero, onOpenCorner, onPin }: { data: PlayData; onPlay: (id: ActivityId) => void; onHero: (hero: PlayData["hero"]) => void; onOpenCorner: () => void; onPin: (id: ActivityId) => void }) {
   const visible = ACTIVITIES.filter(activity =>
     !data.settings.hiddenGames.includes(activity.id)
-    && (data.settings.showAllGames || POLISHED_ACTIVITIES.has(activity.id) || data.pinned.includes(activity.id)));
+    && (data.settings.showAllGames || data.pinned.includes(activity.id)));
   const pinned = data.pinned.map(id => visible.find(activity => activity.id === id)).filter((activity): activity is (typeof ACTIVITIES)[number] => !!activity);
   const heroTheme = SUIT_THEME[data.hero];
   const card = (activity: (typeof ACTIVITIES)[number], big: boolean) => <div key={activity.id} class={`game-card ${big ? "big" : ""}`}>
@@ -238,8 +237,8 @@ function GrownupCorner({ data, onChange, onResetStars, onClose }: { data: PlayDa
     ]} onChange={fractionFocus => set({ fractionFocus })} />
 
     <h3>Games on the menu</h3>
-    <Choice label="Show games" value={settings.showAllGames ? "all" : "ready"} options={[{ value: "ready", label: "Ready games only" }, { value: "all", label: "All 31 games" }]} onChange={value => set({ showAllGames: value === "all" })} />
-    <div class="game-toggles">{ACTIVITIES.filter(activity => settings.showAllGames || POLISHED_ACTIVITIES.has(activity.id)).map(activity => {
+    <Choice label="Menu view" value={settings.showAllGames ? "all" : "pinned"} options={[{ value: "all", label: "All 31 games" }, { value: "pinned", label: "My games only" }]} onChange={value => set({ showAllGames: value === "all" })} />
+    <div class="game-toggles">{ACTIVITIES.map(activity => {
       const shown = !settings.hiddenGames.includes(activity.id);
       return <button key={activity.id} class={shown ? "on" : ""} aria-pressed={shown} onClick={() => set({ hiddenGames: toggle(settings.hiddenGames, activity.id) })}>{shown ? "✓ " : ""}{activity.title}</button>;
     })}</div>
