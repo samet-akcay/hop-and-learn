@@ -36,13 +36,13 @@ Interactive grid, measurement, and spatial games:
 
 ---
 
-## Phase 4 — Data, Stories & Logic
+## Phase 4 — Data, Stories & Logic *(Done)*
 Visual bridges between maths, patterns, and word problems:
-- [ ] **Charts** (`ChartsScene.tsx`) — SVG pictograms using suit tokens (key = 1, 2, 5, or 10), tally charts, and colour-coded block diagrams
-- [ ] **Maths Stories** (`StoriesScene.tsx`) — illustrated story strip + interactive bar model linking the story words to the number sentence
-- [ ] **Number Machine** (`MachineScene.tsx`) — animated input → glowing gear box → output SVG machine
-- [ ] **Logic Puzzles** (`LogicScene.tsx`) — crisp 4×4 illustrated shape sudoku grid and Venn/Carroll sorting circles
-- [ ] **Signal Lights** (`BinaryScene.tsx`) — interactive glowing 8-4-2-1 signal console lamps
+- [x] **Charts** (`ChartsScene.tsx`) — SVG pictograms using suit tokens, tally charts with 5-gate bundles, and colour-coded block diagrams
+- [x] **Maths Stories** (`StoriesScene.tsx`) — Singapore / White Rose bar model linking story words to the number sentence
+- [x] **Number Machine** (`MachineScene.tsx`) — animated input → glowing gear box → output SVG machine + input/output rule table
+- [x] **Logic Puzzles & Steps in Order** (`LogicScene.tsx`, `StepsScene.tsx`) — crisp 4-shape sudoku row, visual shape sort cards, and numbered algorithm flow cards
+- [x] **Signal Lights** (`BinaryScene.tsx`) — glowing 8-4-2-1 signal console lamps
 
 ---
 
